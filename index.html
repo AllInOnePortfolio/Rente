@@ -14,6 +14,8 @@
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Fraunces:ital,wght@0,600;1,600&display=swap" rel="stylesheet">
+<script src="https://www.gstatic.com/firebasejs/10.13.2/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.13.2/firebase-database-compat.js"></script>
 <style>
   :root{
     --bg:#FBF4E7;
@@ -351,6 +353,38 @@
 <script>
 /* ===================== DATA LAYER ===================== */
 const DB_KEY='rente_db_v2';
+
+/* ===================== COMMUNITY SYNC (Firebase) ===================== */
+// Paste your Firebase project's config below (Project settings → General → Your apps → SDK setup and configuration).
+// These values are meant to be public in client code — access is controlled by the database's security rules, not by hiding this config.
+const FIREBASE_CONFIG={
+  apiKey:"",
+  databaseURL:"",
+  projectId:"",
+};
+let fbItemsRef=null, fbSynced=false;
+if(FIREBASE_CONFIG.databaseURL){
+  firebase.initializeApp(FIREBASE_CONFIG);
+  fbItemsRef=firebase.database().ref('items');
+}
+function startCommunitySync(){
+  if(!fbItemsRef||fbSynced) return;
+  fbSynced=true;
+  fbItemsRef.on('value',snap=>{
+    if(!db) return;
+    const remote=snap.val()||{};
+    Object.keys(db.items).forEach(id=>{ if(db.items[id].shared&&!remote[id]) delete db.items[id]; });
+    Object.keys(remote).forEach(id=>{
+      const it=remote[id]; it.id=id; it.shared=true;
+      db.items[id]=it;
+      if(!db.users[it.ownerId]){
+        db.users[it.ownerId]={id:it.ownerId,name:it.ownerName||'Renté member',color:it.ownerColor||avatarColorFor(it.ownerId),avatarPhoto:it.ownerAvatarPhoto||null,program:it.ownerProgram||'Renté member',ratingAvg:5.0,ratingCount:0,verified:!!it.ownerVerified,joined:it.createdAt};
+      }
+    });
+    saveDB();
+    render();
+  },err=>console.warn('Renté: community sync error',err));
+}
 const HANGER_PATH='<path d="M50 22c-5.5 0-10 4.3-10 9.6 0 3.3 2.2 5.4 4.4 7.5l1.1 1" stroke="currentColor" stroke-width="5.5" fill="none" stroke-linecap="round" stroke-linejoin="round"/><path d="M50 40.1 85 62a7.6 7.6 0 0 1-4.1 14H19.1A7.6 7.6 0 0 1 15 62z" fill="currentColor"/>';
 const LOGO_SVG=`<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100"><rect width="100" height="100" rx="24" fill="#7A4B2E"/><g color="#FBF4E7">${HANGER_PATH}</g></svg>`;
 const LOGO_URI='data:image/svg+xml,'+encodeURIComponent(LOGO_SVG);
@@ -428,8 +462,14 @@ function avatarHtml(user,size){size=size||34; const fs=Math.round(size*0.4);
   return `<div class="avatar" style="width:${size}px;height:${size}px;background:${user.color||avatarColorFor(user.id)};font-size:${fs}px">${initials(user.name)}</div>`;
 }
 
+function getAnonId(){
+  let id=localStorage.getItem('rente_anon_id');
+  if(!id){ id='anon_'+Math.random().toString(36).slice(2,10)+Date.now().toString(36); try{localStorage.setItem('rente_anon_id',id);}catch(e){} }
+  return id;
+}
 function seedDB(name,program,email){
   const now=new Date();
+  const myId=getAnonId();
   const users={};
   const seedPeople=[
     ['u_emma','Emma Lindqvist','Business & Marketing',4.9,'Selling my closet gaps one rental at a time. Always packs items clean & ironed.'],
@@ -442,7 +482,7 @@ function seedDB(name,program,email){
   seedPeople.forEach(([id,nm,prog,rating,bio])=>{
     users[id]={id,name:nm,program:prog,ratingAvg:rating,ratingCount:8+Math.floor(Math.random()*30),bio,verified:true,joined:addDays(today(),-(200+Math.floor(Math.random()*300))),color:avatarColorFor(id)};
   });
-  users['u_me']={id:'u_me',name:name||'You',program:program||'Jönköping University',email:email||'',ratingAvg:5.0,ratingCount:0,bio:'New to Renté — excited to start renting & lending!',verified:!!(email&&email.includes('ju.se')),joined:today(),color:avatarColorFor('u_me')};
+  users[myId]={id:myId,name:name||'You',program:program||'Jönköping University',email:email||'',ratingAvg:5.0,ratingCount:0,bio:'New to Renté — excited to start renting & lending!',verified:!!(email&&email.includes('ju.se')),joined:today(),color:avatarColorFor(myId)};
 
   const items={};
   function mkItem(o){const id=uid('it'); items[id]={id,ownerId:o.owner,title:o.title,category:o.cat,size:o.size,condition:o.cond,desc:o.desc,price:o.price,deposit:o.deposit,images:o.images||['placeholder'],occasions:o.occ,availFrom:today(),availTo:addDays(today(),60),location:o.loc||SPOTS[0].name,createdAt:addDays(today(),-Math.floor(Math.random()*20)),trending:!!o.trend,distanceLabel:o.dist||'Near campus',favoritesCount:Math.floor(Math.random()*30)}; return id;}
@@ -457,8 +497,8 @@ function seedDB(name,program,email){
   mkItem({owner:'u_wilma',title:'Golden Sequin Dress',cat:'dresses',size:'M',cond:'Like new',desc:'Show-stopping sequin dress, worn once. New Year\'s Eve energy.',price:109,deposit:550,occ:['Party','Themed Event'],trend:true,dist:'Near Vaxholmen'});
   mkItem({owner:'u_leo',title:'Vampire Cape & Costume Set',cat:'halloween',size:'L',cond:'Good',desc:'Dramatic vampire cape, shirt and accessories. A Halloween party favorite.',price:75,deposit:350,occ:['Halloween','Themed Event'],trend:true,dist:'Near Bus Stop'});
   mkItem({owner:'u_noah',title:'Denim Jacket – Vintage',cat:'outerwear',size:'M',cond:'Fair',desc:'Vintage wash denim jacket with some character. Great casual layer.',price:55,deposit:300,occ:['Everyday'],dist:'Near Hälsohögskolan'});
-  const idSundress=mkItem({owner:'u_me',title:'Blue Floral Sundress',cat:'dresses',size:'S',cond:'Like new',desc:'Light floral sundress, perfect for spring dinners or garden parties.',price:59,deposit:350,occ:['Dinner','Everyday'],dist:'Your listing'});
-  const idBoots=mkItem({owner:'u_me',title:'Black Ankle Boots – Size 39',cat:'shoes',size:'39',cond:'Good',desc:'Versatile black ankle boots, goes with everything.',price:45,deposit:280,occ:['Everyday','Party'],dist:'Your listing'});
+  const idSundress=mkItem({owner:myId,title:'Blue Floral Sundress',cat:'dresses',size:'S',cond:'Like new',desc:'Light floral sundress, perfect for spring dinners or garden parties.',price:59,deposit:350,occ:['Dinner','Everyday'],dist:'Your listing'});
+  const idBoots=mkItem({owner:myId,title:'Black Ankle Boots – Size 39',cat:'shoes',size:'39',cond:'Good',desc:'Versatile black ankle boots, goes with everything.',price:45,deposit:280,occ:['Everyday','Party'],dist:'Your listing'});
 
   const reviews={};
   function addReview(userId,from,rating,text,daysAgo){(reviews[userId]=reviews[userId]||[]).push({id:uid('rv'),from,rating,text,time:addDays(today(),-daysAgo)});}
@@ -469,7 +509,7 @@ function seedDB(name,program,email){
   addReview('u_noah','u_emma',5,'Tuxedo made my formal dinner — great condition.',9);
   addReview('u_wilma','u_noah',5,'Fast replies and flexible pickup location.',25);
   addReview('u_leo','u_alice',5,'Cape was a hit at the Halloween party, thank you!',5);
-  addReview('u_me','u_oskar',5,'Boots were in great shape, smooth handover at the library.',3);
+  addReview(myId,'u_oskar',5,'Boots were in great shape, smooth handover at the library.',3);
 
   const bookings={};
   const wallet={balance:1000,transactions:[]};
@@ -478,16 +518,16 @@ function seedDB(name,program,email){
 
   // booking 1: requested rental of my sundress by Emma
   const b1=uid('bk');
-  bookings[b1]={id:b1,itemId:idSundress,renterId:'u_emma',ownerId:'u_me',status:'requested',start:addDays(today(),3),end:addDays(today(),5),meetup:SPOTS[1].name,price:59,deposit:350,createdAt:addDays(today(),0),returnPhotos:[]};
+  bookings[b1]={id:b1,itemId:idSundress,renterId:'u_emma',ownerId:myId,status:'requested',start:addDays(today(),3),end:addDays(today(),5),meetup:SPOTS[1].name,price:59,deposit:350,createdAt:addDays(today(),0),returnPhotos:[]};
 
   // booking 2: return_pending, my boots rented by Oskar, awaiting my confirmation
   const b2=uid('bk');
-  bookings[b2]={id:b2,itemId:idBoots,renterId:'u_oskar',ownerId:'u_me',status:'return_pending',start:addDays(today(),-6),end:addDays(today(),-3),meetup:SPOTS[0].name,price:45*3,deposit:280,createdAt:addDays(today(),-7),returnPhotos:['placeholder']};
+  bookings[b2]={id:b2,itemId:idBoots,renterId:'u_oskar',ownerId:myId,status:'return_pending',start:addDays(today(),-6),end:addDays(today(),-3),meetup:SPOTS[0].name,price:45*3,deposit:280,createdAt:addDays(today(),-7),returnPhotos:['placeholder']};
 
   // booking 3: I'm renting Emma's witch costume, confirmed & upcoming
   const b3=uid('bk');
   const days3=2;
-  bookings[b3]={id:b3,itemId:idHalloween,renterId:'u_me',ownerId:'u_emma',status:'confirmed',start:addDays(today(),37),end:addDays(today(),39),meetup:SPOTS[1].name,price:89*days3,deposit:400,createdAt:addDays(today(),-1),returnPhotos:[]};
+  bookings[b3]={id:b3,itemId:idHalloween,renterId:myId,ownerId:'u_emma',status:'confirmed',start:addDays(today(),37),end:addDays(today(),39),meetup:SPOTS[1].name,price:89*days3,deposit:400,createdAt:addDays(today(),-1),returnPhotos:[]};
   tx('rental_payment',-(89*days3),'Rental payment — Witch Costume',1);
   tx('deposit_hold',-400,'Deposit hold — Witch Costume',1);
 
@@ -498,7 +538,7 @@ function seedDB(name,program,email){
     {id:uid('nt'),type:'payment',text:'Your booking for Black Halloween Witch Costume is confirmed.',time:addDays(today(),-1),read:true,route:{r:'booking-detail',p:{id:b3}}},
   ];
 
-  db={me:'u_me',users,items,bookings,messages:{},wallet,favorites:[],notifications,reviews,onboarded:true,points:120};
+  db={me:myId,users,items,bookings,messages:{},wallet,favorites:[],notifications,reviews,onboarded:true,points:120};
   saveDB();
 }
 let storageOK=true;
@@ -509,7 +549,12 @@ function saveDB(){
 function loadDB(){
   try{
     const raw=localStorage.getItem(DB_KEY);
-    if(raw){db=JSON.parse(raw); if(db.points==null) db.points=120; return true;}
+    if(raw){
+      db=JSON.parse(raw);
+      if(db.points==null) db.points=120;
+      if(db.me==='u_me') return false; // old pre-sync demo data — reseed with a real anon id
+      return true;
+    }
     return false;
   }catch(e){ storageOK=false; console.warn('Renté: local storage unavailable, starting a fresh in-memory session.',e); return false; }
 }
@@ -605,6 +650,7 @@ function finishOnboarding(){
   const program=document.getElementById('ob-program').value.trim()||'Jönköping University';
   const email=document.getElementById('ob-email').value.trim();
   seedDB(name,program,email);
+  startCommunitySync();
   go('home');
 }
 
@@ -931,11 +977,22 @@ function publishListing(){
   const d=state.listDraft;
   if(!d.title||!d.price||!d.deposit){toast('Please fill in title, price and deposit'); return;}
   const images=d.images.filter(Boolean); if(!images.length) images.push('placeholder');
-  const id=uid('it');
-  db.items[id]={id,ownerId:db.me,title:d.title,category:d.category,size:d.size,condition:d.condition,desc:d.desc||'No description provided.',price:Number(d.price),deposit:Number(d.deposit),images,occasions:d.occasions,availFrom:d.availFrom,availTo:d.availTo,location:d.location,createdAt:new Date().toISOString(),trending:false,distanceLabel:'Your listing',favoritesCount:0};
+  const owner=me();
+  const item={ownerId:db.me,title:d.title,category:d.category,size:d.size,condition:d.condition,desc:d.desc||'No description provided.',price:Number(d.price),deposit:Number(d.deposit),images,occasions:d.occasions,availFrom:d.availFrom,availTo:d.availTo,location:d.location,createdAt:new Date().toISOString(),trending:false,favoritesCount:0,
+    ownerName:owner.name,ownerColor:owner.color||avatarColorFor(db.me),ownerAvatarPhoto:owner.avatarPhoto||null,ownerProgram:owner.program,ownerVerified:!!owner.verified};
+  let id;
+  if(fbItemsRef){
+    id=fbItemsRef.push().key;
+    item.id=id; item.shared=true; item.distanceLabel='Community listing';
+    fbItemsRef.child(id).set(item).catch(e=>{ console.warn('Renté: failed to publish to community feed',e); toast('Published locally — community sync failed'); });
+  } else {
+    id=uid('it');
+    item.id=id; item.shared=false; item.distanceLabel='Your listing';
+  }
+  db.items[id]=item;
   saveDB();
   state.listDraft=null;
-  toast('Listing published!');
+  toast(fbItemsRef?'Listing published to everyone!':'Listing published!');
   go('item',{id});
 }
 
@@ -993,6 +1050,7 @@ function saveEditItem(id){
   if(!d.title||!d.price||!d.deposit){toast('Please fill in title, price and deposit'); return;}
   const images=d.images.filter(Boolean); if(!images.length) images.push('placeholder');
   Object.assign(item,{title:d.title,category:d.category,size:d.size,condition:d.condition,desc:d.desc||'No description provided.',price:Number(d.price),deposit:Number(d.deposit),images,occasions:d.occasions,availFrom:d.availFrom,availTo:d.availTo,location:d.location});
+  if(item.shared&&fbItemsRef){ fbItemsRef.child(id).set(item).catch(e=>{ console.warn('Renté: failed to sync edit',e); toast('Saved locally — community sync failed'); }); }
   saveDB();
   state.editDraft=null;
   toast('Listing updated!');
@@ -1000,11 +1058,13 @@ function saveEditItem(id){
 }
 function deleteListing(id){
   if(!confirm('Remove this listing? This cannot be undone.')) return;
+  const item=db.items[id];
+  if(item&&item.shared&&fbItemsRef){ fbItemsRef.child(id).remove().catch(e=>console.warn('Renté: failed to remove from community feed',e)); }
   delete db.items[id];
   db.favorites=db.favorites.filter(f=>f!==id);
   saveDB();
   toast('Listing removed');
-  go('profile',{userId:'u_me'});
+  go('profile',{userId:db.me});
 }
 
 /* ===================== CAMERA (shared hidden input) ===================== */
@@ -1261,7 +1321,7 @@ function saveProfile(){
 /* ===================== BOOT ===================== */
 document.getElementById('appleTouchIcon').href=LOGO_URI;
 document.getElementById('favicon').href=LOGO_URI;
-if(loadDB()){ go('home'); } else { render(); }
+if(loadDB()){ startCommunitySync(); go('home'); } else { render(); }
 if(!storageOK){ setTimeout(()=>toast('Note: this browser is blocking saved data — your changes won\'t persist after closing.'),1200); }
 </script>
 </body>
