@@ -489,6 +489,7 @@ function render(){
     else if(r==='booking') html=screenBooking(p.id,p.step||1);
     else if(r==='booking-detail') html=screenBookingDetail(p.id);
     else if(r==='list-create') html=screenListCreate();
+    else if(r==='edit-item') html=screenEditItem(p.id);
     else if(r==='inbox') html=screenInbox();
     else if(r==='chat') html=screenChat(p.threadId);
     else if(r==='wallet') html=screenWallet();
@@ -564,7 +565,7 @@ function finishOnboarding(){
 /* ===================== HOME ===================== */
 function screenHome(){
   const m=me();
-  const allItems=Object.values(db.items).filter(i=>i.ownerId!==db.me);
+  const allItems=Object.values(db.items);
   const trending=allItems.filter(i=>i.trending).slice(0,6);
   const recommended=allItems.slice().sort(()=>0.5-Math.random()).slice(0,6);
   const nearby=allItems.slice(0,4);
@@ -620,7 +621,7 @@ function screenHome(){
 function screenSearch(){
   if(state.params.cat) state.searchCat=state.params.cat;
   const q=(state.searchQ||'').toLowerCase();
-  let results=Object.values(db.items).filter(i=>i.ownerId!==db.me);
+  let results=Object.values(db.items);
   if(state.searchCat) results=results.filter(i=>i.category===state.searchCat);
   if(q) results=results.filter(i=> i.title.toLowerCase().includes(q) || i.desc.toLowerCase().includes(q) || (i.occasions||[]).some(o=>o.toLowerCase().includes(q)) );
   return `
@@ -693,7 +694,7 @@ function screenItemDetail(id){
       <button class="btn btn-primary btn-sm" onclick="go('booking',{id:'${id}',step:1})" style="flex:2;">Rent this item</button>
     </div>
   </div>`:`
-  <div class="sticky-cta"><button class="btn btn-outline" onclick="go('profile',{userId:'u_me'})">This is your listing</button></div>`}
+  <div class="sticky-cta"><div class="btn-row"><button class="btn btn-outline btn-sm" onclick="go('edit-item',{id:'${id}'})">✏️ Edit listing</button><button class="btn btn-beige btn-sm" onclick="deleteListing('${id}')">🗑️ Remove</button></div></div>`}
   `;
 }
 function updateDots(el){const i=Math.round(el.scrollLeft/el.clientWidth); document.querySelectorAll('.dots span').forEach((d,idx)=>d.classList.toggle('on',idx===i));}
@@ -877,7 +878,7 @@ function screenListCreate(){
     <button class="btn btn-primary" onclick="publishListing()">Publish listing</button>
   </div>`;
 }
-function pickPhoto(i){state.listSlot=i; state.camTarget='listing'; document.getElementById('hiddenCam').click();}
+function pickPhoto(i,target){state.listSlot=i; state.camTarget=target||'listing'; document.getElementById('hiddenCam').click();}
 function removePhoto(ev,i){ev.stopPropagation(); state.listDraft.images[i]=null; render();}
 function toggleOcc(o){const d=state.listDraft; const i=d.occasions.indexOf(o); if(i>-1)d.occasions.splice(i,1); else d.occasions.push(o); render();}
 function publishListing(){
@@ -892,11 +893,80 @@ function publishListing(){
   go('item',{id});
 }
 
+/* ===================== EDIT LISTING ===================== */
+function screenEditItem(id){
+  const item=db.items[id]; if(!item) return `<div class="screen">${topbar('Edit listing')}<div class="empty">Item not found</div></div>`;
+  if(!state.editDraft||state.editDraft.id!==id){
+    const imgs=(item.images||[]).filter(im=>im!=='placeholder');
+    state.editDraft={id,images:[imgs[0]||null,imgs[1]||null,imgs[2]||null,imgs[3]||null],title:item.title,category:item.category,size:item.size,condition:item.condition,desc:item.desc,price:item.price,deposit:item.deposit,availFrom:item.availFrom,availTo:item.availTo,occasions:(item.occasions||[]).slice(),location:item.location};
+  }
+  const d=state.editDraft;
+  return `
+  ${topbar('Edit listing')}
+  <div class="screen">
+    <div class="field">
+      <label>Photos</label>
+      <div class="photo-grid">
+        ${d.images.map((im,i)=>`
+          <div class="photo-slot" onclick="pickPhoto(${i},'edititem')">
+            ${im?`<img src="${im}"><button class="rm" onclick="removeEditPhoto(event,${i})">✕</button>`:`<svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M4 7h3l2-2h6l2 2h3v13H4z"/><circle cx="12" cy="13" r="3.5"/></svg>`}
+          </div>`).join('')}
+      </div>
+      <div style="font-size:11.5px;color:var(--text-faint);">Tap a slot to retake or choose a new photo.</div>
+    </div>
+    <div class="field"><label>Title</label><input type="text" id="e-title" value="${esc(d.title)}" oninput="state.editDraft.title=this.value"></div>
+    <div class="row2">
+      <div class="field"><label>Category</label><select id="e-cat" onchange="state.editDraft.category=this.value">${CATS.map(c=>`<option value="${c.id}" ${d.category===c.id?'selected':''}>${c.em} ${c.label}</option>`).join('')}</select></div>
+      <div class="field"><label>Size</label><select id="e-size" onchange="state.editDraft.size=this.value">${SIZES.map(s=>`<option ${d.size===s?'selected':''}>${s}</option>`).join('')}</select></div>
+    </div>
+    <div class="field"><label>Condition</label><select id="e-cond" onchange="state.editDraft.condition=this.value">${CONDITIONS.map(c=>`<option ${d.condition===c?'selected':''}>${c}</option>`).join('')}</select></div>
+    <div class="field"><label>Description</label><textarea id="e-desc" oninput="state.editDraft.desc=this.value">${esc(d.desc)}</textarea></div>
+    <div class="row2">
+      <div class="field"><label>Price / day (kr)</label><input type="number" id="e-price" value="${d.price}" oninput="state.editDraft.price=this.value"></div>
+      <div class="field"><label>Damage deposit (kr)</label><input type="number" id="e-deposit" value="${d.deposit}" oninput="state.editDraft.deposit=this.value"></div>
+    </div>
+    <div class="row2">
+      <div class="field"><label>Available from</label><input type="date" id="e-from" value="${d.availFrom}" oninput="state.editDraft.availFrom=this.value"></div>
+      <div class="field"><label>Available to</label><input type="date" id="e-to" value="${d.availTo}" oninput="state.editDraft.availTo=this.value"></div>
+    </div>
+    <div class="field">
+      <label>Best for</label>
+      <div class="tagpick">${OCCASIONS.map(o=>`<div class="chip ${d.occasions.includes(o)?'active':''}" onclick="toggleEditOcc('${o}')">${o}</div>`).join('')}</div>
+    </div>
+    <div class="field">
+      <label>Default meetup spot</label>
+      <select id="e-loc" onchange="state.editDraft.location=this.value">${SPOTS.map(s=>`<option ${d.location===s.name?'selected':''}>${s.name}</option>`).join('')}</select>
+    </div>
+    <button class="btn btn-primary" onclick="saveEditItem('${id}')">Save changes</button>
+  </div>`;
+}
+function removeEditPhoto(ev,i){ev.stopPropagation(); state.editDraft.images[i]=null; render();}
+function toggleEditOcc(o){const d=state.editDraft; const i=d.occasions.indexOf(o); if(i>-1)d.occasions.splice(i,1); else d.occasions.push(o); render();}
+function saveEditItem(id){
+  const d=state.editDraft; const item=db.items[id]; if(!item) return;
+  if(!d.title||!d.price||!d.deposit){toast('Please fill in title, price and deposit'); return;}
+  const images=d.images.filter(Boolean); if(!images.length) images.push('placeholder');
+  Object.assign(item,{title:d.title,category:d.category,size:d.size,condition:d.condition,desc:d.desc||'No description provided.',price:Number(d.price),deposit:Number(d.deposit),images,occasions:d.occasions,availFrom:d.availFrom,availTo:d.availTo,location:d.location});
+  saveDB();
+  state.editDraft=null;
+  toast('Listing updated!');
+  go('item',{id});
+}
+function deleteListing(id){
+  if(!confirm('Remove this listing? This cannot be undone.')) return;
+  delete db.items[id];
+  db.favorites=db.favorites.filter(f=>f!==id);
+  saveDB();
+  toast('Listing removed');
+  go('profile',{userId:'u_me'});
+}
+
 /* ===================== CAMERA (shared hidden input) ===================== */
 document.getElementById('hiddenCam').addEventListener('change',function(e){
   const file=e.target.files[0]; if(!file) return;
   fileToDataURL(file).then(url=>{
     if(state.camTarget==='listing'){ state.listDraft.images[state.listSlot]=url; render(); }
+    else if(state.camTarget==='edititem'){ state.editDraft.images[state.listSlot]=url; render(); }
     else if(state.camTarget==='returnphoto'){ const b=db.bookings[state.camBookingId]; b.returnPhotos=b.returnPhotos||[]; b.returnPhotos.push(url); saveDB(); render(); }
     else if(state.camTarget==='avatar'){ state.profileDraft.avatarPhoto=url; render(); }
   });
