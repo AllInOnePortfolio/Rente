@@ -1,0 +1,1139 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, viewport-fit=cover">
+<title>Renté</title>
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="Renté">
+<meta name="theme-color" content="#FBF4E7">
+<link rel="apple-touch-icon" id="appleTouchIcon" href="">
+<meta name="mobile-web-app-capable" content="yes">
+<style>
+  :root{
+    --bg:#FBF4E7;
+    --bg-outer:#EEE2CC;
+    --card:#FFFEFA;
+    --beige:#F1E5CC;
+    --beige-dark:#B98F68;
+    --accent:#7A4B2E;
+    --accent-dark:#54331E;
+    --text:#3E2A1B;
+    --text-soft:#8A7160;
+    --text-faint:#BFA98F;
+    --line:#EBDFC5;
+    --danger:#B0473A;
+    --success:#5B8266;
+    --radius:22px;
+    --radius-sm:14px;
+    --tabbar-h:64px;
+    color-scheme: light;
+  }
+  @media (prefers-color-scheme: dark){
+    :root:not([data-theme="light"]){
+      --bg:#241811;
+      --bg-outer:#170F0A;
+      --card:#2E2018;
+      --beige:#3A2A1E;
+      --beige-dark:#6B4A34;
+      --accent:#D9B48A;
+      --accent-dark:#EAD1AE;
+      --text:#F5EBDD;
+      --text-soft:#C9B49B;
+      --text-faint:#8A7161;
+      --line:#43312A;
+    }
+  }
+  :root[data-theme="dark"]{
+    --bg:#241811;
+    --bg-outer:#170F0A;
+    --card:#2E2018;
+    --beige:#3A2A1E;
+    --beige-dark:#6B4A34;
+    --accent:#D9B48A;
+    --accent-dark:#EAD1AE;
+    --text:#F5EBDD;
+    --text-soft:#C9B49B;
+    --text-faint:#8A7161;
+    --line:#43312A;
+  }
+  *{box-sizing:border-box; -webkit-tap-highlight-color:transparent;}
+  html,body{margin:0; padding:0; height:100%; background:var(--bg-outer);}
+  body{
+    font-family:-apple-system,BlinkMacSystemFont,"SF Pro Text",system-ui,Segoe UI,Roboto,sans-serif;
+    color:var(--text);
+    -webkit-font-smoothing:antialiased;
+    overscroll-behavior:none;
+  }
+  img{max-width:100%;}
+  [hidden]{display:none!important;}
+  button{font-family:inherit;}
+  input,select,textarea{font-family:inherit;}
+  ::-webkit-scrollbar{display:none;}
+
+  #root{
+    max-width:480px;
+    margin:0 auto;
+    min-height:100vh;
+    min-height:100dvh;
+    background:var(--bg);
+    display:flex;
+    flex-direction:column;
+    position:relative;
+    box-shadow:0 0 60px rgba(0,0,0,0.06);
+    overflow:hidden;
+    padding-top:env(safe-area-inset-top,0px);
+  }
+  #app{
+    flex:1 1 auto;
+    overflow-y:auto;
+    -webkit-overflow-scrolling:touch;
+    position:relative;
+    min-height:0;
+  }
+  .screen{padding:18px 18px 28px; animation:fadeIn .22s ease;}
+  @keyframes fadeIn{from{opacity:0; transform:translateY(6px);} to{opacity:1; transform:none;}}
+
+  /* ---------- Top bars ---------- */
+  .topbar{
+    position:sticky; top:0; z-index:5;
+    display:flex; align-items:center; gap:12px;
+    padding:14px 16px; background:var(--bg);
+    border-bottom:1px solid var(--line);
+  }
+  .topbar h1{font-size:17px; margin:0; font-weight:600; flex:1; text-align:center; margin-right:34px;}
+  .iconbtn{
+    width:36px; height:36px; border-radius:50%; border:none; background:var(--beige);
+    display:flex; align-items:center; justify-content:center; color:var(--text); cursor:pointer; flex-shrink:0;
+  }
+  .iconbtn svg{width:18px; height:18px;}
+  .iconbtn.ghost{background:transparent;}
+
+  /* ---------- Home header ---------- */
+  .home-header{padding:20px 18px 6px;}
+  .logo-wrap{display:flex; align-items:center; justify-content:space-between; margin-bottom:18px;}
+  .logo{font-family:Georgia,'Iowan Old Style',serif; font-size:26px; letter-spacing:0.5px; font-weight:700; color:var(--text);}
+  .logo span{color:var(--accent);}
+  .logo-img{display:block; mix-blend-mode:multiply;}
+  :root[data-theme="dark"] .logo-img{mix-blend-mode:normal; border-radius:14px;}
+  @media (prefers-color-scheme: dark){:root:not([data-theme="light"]) .logo-img{mix-blend-mode:normal; border-radius:14px;}}
+  .header-actions{display:flex; gap:10px;}
+  .badge-dot{position:absolute; top:-2px; right:-2px; width:9px; height:9px; border-radius:50%; background:var(--danger); border:2px solid var(--bg);}
+  .greeting{font-size:22px; font-weight:700; margin:2px 0 14px;}
+  .greeting small{display:block; font-weight:400; font-size:13px; color:var(--text-soft); margin-top:2px;}
+
+  .wallet-chip{
+    display:flex; align-items:center; gap:8px; background:var(--beige); border-radius:100px; padding:8px 14px 8px 8px; cursor:pointer;
+  }
+  .wallet-chip .dot{width:26px;height:26px;border-radius:50%;background:var(--accent);color:#fff;display:flex;align-items:center;justify-content:center;font-size:13px;}
+  .wallet-chip b{font-size:13px;}
+
+  /* ---------- Search ---------- */
+  .searchbar{
+    display:flex; align-items:center; gap:10px; background:var(--card); border:1px solid var(--line);
+    border-radius:100px; padding:12px 16px; margin:14px 0 16px; cursor:text;
+  }
+  .searchbar input{border:none; outline:none; background:transparent; flex:1; font-size:15px; color:var(--text);}
+  .searchbar svg{width:18px; height:18px; color:var(--text-soft); flex-shrink:0;}
+
+  .section-title{display:flex; align-items:center; justify-content:space-between; margin:22px 0 12px;}
+  .section-title h2{font-size:16px; margin:0; font-weight:700;}
+  .section-title a{font-size:12.5px; color:var(--accent-dark); text-decoration:none; font-weight:600;}
+
+  .chips-row{display:flex; gap:10px; overflow-x:auto; padding-bottom:4px; margin:0 -18px; padding-left:18px; padding-right:18px;}
+  .chip{
+    flex-shrink:0; display:flex; align-items:center; gap:6px; padding:9px 15px; border-radius:100px;
+    background:var(--card); border:1px solid var(--line); font-size:13px; font-weight:600; cursor:pointer; color:var(--text);
+  }
+  .chip.active{background:var(--text); color:var(--bg); border-color:var(--text);}
+  .chip .em{font-size:15px;}
+
+  .hscroll{display:flex; gap:14px; overflow-x:auto; margin:0 -18px; padding:2px 18px 10px;}
+  .grid2{display:grid; grid-template-columns:1fr 1fr; gap:14px;}
+
+  /* ---------- Cards ---------- */
+  .card{background:var(--card); border-radius:var(--radius); border:1px solid var(--line);}
+  .item-card{width:100%; cursor:pointer; overflow:hidden; position:relative;}
+  .hscroll .item-card{width:158px; flex-shrink:0;}
+  .item-img{
+    position:relative; width:100%; aspect-ratio:1/1.05; display:flex; align-items:center; justify-content:center;
+    font-size:44px; overflow:hidden;
+  }
+  .item-img img{width:100%; height:100%; object-fit:cover; position:absolute; inset:0;}
+  .fav-btn{
+    position:absolute; top:9px; right:9px; width:30px; height:30px; border-radius:50%; border:none;
+    background:rgba(255,255,255,0.85); backdrop-filter:blur(4px); display:flex; align-items:center; justify-content:center;
+    color:#B0392E; font-size:15px; cursor:pointer; z-index:2;
+  }
+  .fav-btn.active{color:#C1392B;}
+  .badge-trend{position:absolute; left:9px; top:9px; background:rgba(46,42,37,0.82); color:#fff; font-size:10.5px; font-weight:700; padding:4px 9px; border-radius:100px; z-index:2;}
+  .item-info{padding:11px 12px 13px;}
+  .item-title{font-size:13.5px; font-weight:700; line-height:1.25; margin-bottom:3px; white-space:nowrap; overflow:hidden; text-overflow:ellipsis;}
+  .item-meta{font-size:11.5px; color:var(--text-soft); margin-bottom:6px;}
+  .item-price{font-size:13.5px; margin-bottom:6px;}
+  .item-price b{font-size:15px;}
+  .item-owner{display:flex; align-items:center; gap:5px; font-size:11px; color:var(--text-soft);}
+  .avatar{border-radius:50%; display:flex; align-items:center; justify-content:center; color:#fff; font-weight:700; flex-shrink:0;}
+  .list-row{display:flex; gap:12px; padding:12px; cursor:pointer; align-items:center;}
+  .list-row .item-img{width:64px; height:64px; border-radius:16px; flex-shrink:0; font-size:26px; aspect-ratio:auto;}
+  .list-row .rowinfo{flex:1; min-width:0;}
+
+  .stars{color:var(--accent-dark); font-size:11px; letter-spacing:1px;}
+
+  /* ---------- Buttons ---------- */
+  .btn{
+    display:flex; align-items:center; justify-content:center; gap:8px; width:100%; padding:15px; border-radius:16px;
+    border:none; font-size:15px; font-weight:700; cursor:pointer;
+  }
+  .btn-primary{background:var(--text); color:var(--bg);}
+  .btn-primary:disabled{opacity:0.4;}
+  .btn-outline{background:transparent; border:1.5px solid var(--text); color:var(--text);}
+  .btn-beige{background:var(--beige); color:var(--text);}
+  .btn-danger{background:transparent; color:var(--danger); border:1.5px solid var(--danger);}
+  .btn-sm{padding:10px; font-size:13px; border-radius:12px; width:auto; flex:1;}
+  .btn-row{display:flex; gap:10px; margin-top:10px;}
+  .sticky-cta{position:sticky; bottom:0; padding:14px 18px calc(16px + env(safe-area-inset-bottom,0px)); background:linear-gradient(0deg, var(--bg) 60%, transparent); z-index:4;}
+
+  /* ---------- Forms ---------- */
+  .field{margin-bottom:16px;}
+  .field label{display:block; font-size:12.5px; font-weight:700; color:var(--text-soft); margin-bottom:7px; text-transform:uppercase; letter-spacing:0.4px;}
+  .field input[type=text], .field input[type=number], .field input[type=email], .field input[type=date], .field textarea, .field select{
+    width:100%; padding:13px 14px; border-radius:14px; border:1.5px solid var(--line); background:var(--card); color:var(--text); font-size:15px; outline:none;
+  }
+  .field input:focus, .field textarea:focus, .field select:focus{border-color:var(--accent);}
+  .field textarea{resize:vertical; min-height:80px;}
+  .row2{display:flex; gap:12px;}
+  .row2 .field{flex:1;}
+  .tagpick{display:flex; flex-wrap:wrap; gap:8px;}
+  .tagpick .chip{margin:0;}
+
+  /* ---------- Tabbar ---------- */
+  .tabbar{
+    display:flex; flex-shrink:0; background:var(--card); border-top:1px solid var(--line);
+    padding:8px 6px calc(8px + env(safe-area-inset-bottom,0px));
+  }
+  .tab{
+    flex:1; display:flex; flex-direction:column; align-items:center; gap:3px; background:none; border:none; padding:6px 2px;
+    color:var(--text-faint); cursor:pointer; position:relative;
+  }
+  .tab svg{width:22px; height:22px;}
+  .tab span{font-size:10px; font-weight:600;}
+  .tab.active{color:var(--text);}
+  .tab.plus .plusdot{
+    width:38px; height:38px; border-radius:50%; background:var(--text); color:var(--bg); display:flex; align-items:center; justify-content:center; margin-bottom:2px;
+  }
+  .tab.plus svg{width:18px; height:18px;}
+
+  /* ---------- Misc ---------- */
+  .empty{text-align:center; padding:50px 20px; color:var(--text-soft);}
+  .empty .em{font-size:40px; display:block; margin-bottom:12px;}
+  .divider{height:1px; background:var(--line); margin:16px 0;}
+  .pill{display:inline-flex; align-items:center; padding:5px 11px; border-radius:100px; background:var(--beige); font-size:12px; font-weight:600;}
+  .pill.status-requested{background:#F2E4C8; color:#8A6A1E;}
+  .pill.status-confirmed{background:#DCEBE0; color:#3D6B4C;}
+  .pill.status-active{background:#DDE7F2; color:#33587E;}
+  .pill.status-return_pending{background:#F2E1D8; color:#93502E;}
+  .pill.status-completed{background:var(--beige); color:var(--text-soft);}
+  .pill.status-declined, .pill.status-cancelled{background:#F3DCD8; color:#A03B2E;}
+  .kv{display:flex; justify-content:space-between; font-size:13.5px; padding:8px 0; color:var(--text-soft);}
+  .kv b{color:var(--text); font-weight:700;}
+  .steps{display:flex; gap:6px; margin-bottom:18px;}
+  .steps div{flex:1; height:4px; border-radius:100px; background:var(--line);}
+  .steps div.done{background:var(--text);}
+  .radio-row{display:flex; align-items:center; gap:12px; padding:13px 14px; border:1.5px solid var(--line); border-radius:14px; margin-bottom:10px; cursor:pointer;}
+  .radio-row.sel{border-color:var(--text); background:var(--beige);}
+  .radio-row .rdot{width:18px; height:18px; border-radius:50%; border:2px solid var(--text-faint); flex-shrink:0; display:flex; align-items:center; justify-content:center;}
+  .radio-row.sel .rdot{border-color:var(--text);}
+  .radio-row.sel .rdot::after{content:''; width:9px; height:9px; border-radius:50%; background:var(--text);}
+  .photo-grid{display:grid; grid-template-columns:repeat(4,1fr); gap:9px; margin-bottom:6px;}
+  .photo-slot{aspect-ratio:1/1; border-radius:14px; border:1.5px dashed var(--line); display:flex; align-items:center; justify-content:center; position:relative; overflow:hidden; background:var(--card); cursor:pointer;}
+  .photo-slot img{width:100%; height:100%; object-fit:cover; position:absolute; inset:0;}
+  .photo-slot .rm{position:absolute; top:4px; right:4px; width:20px; height:20px; border-radius:50%; background:rgba(0,0,0,0.55); color:#fff; border:none; font-size:11px; z-index:2;}
+  .msg-bubble{max-width:78%; padding:10px 14px; border-radius:18px; margin-bottom:10px; font-size:14px; line-height:1.4;}
+  .msg-them{background:var(--beige); border-bottom-left-radius:5px;}
+  .msg-me{background:var(--text); color:var(--bg); margin-left:auto; border-bottom-right-radius:5px;}
+  .msg-time{font-size:10px; color:var(--text-faint); margin:2px 4px 12px; text-align:right;}
+  .chatbar{display:flex; gap:10px; padding:12px 14px calc(12px + env(safe-area-inset-bottom,0px)); border-top:1px solid var(--line); background:var(--bg);}
+  .chatbar input{flex:1; border:1.5px solid var(--line); border-radius:100px; padding:12px 16px; outline:none; background:var(--card); color:var(--text); font-size:14px;}
+  .chatbar button{width:44px; height:44px; border-radius:50%; background:var(--text); color:var(--bg); border:none; flex-shrink:0; display:flex; align-items:center; justify-content:center;}
+  .notif-row{display:flex; gap:12px; padding:13px 0; border-bottom:1px solid var(--line);}
+  .notif-row .em{width:38px; height:38px; border-radius:50%; background:var(--beige); display:flex; align-items:center; justify-content:center; font-size:17px; flex-shrink:0;}
+  .notif-row.unread{position:relative;}
+  .notif-row.unread::after{content:''; width:8px; height:8px; border-radius:50%; background:var(--accent); position:absolute; right:0; top:16px;}
+  .profile-tabs{display:flex; gap:6px; background:var(--beige); padding:4px; border-radius:14px; margin:16px 0;}
+  .profile-tabs button{flex:1; padding:9px; border:none; background:transparent; border-radius:11px; font-size:12.5px; font-weight:700; color:var(--text-soft); cursor:pointer;}
+  .profile-tabs button.active{background:var(--card); color:var(--text);}
+  .stat-box{flex:1; text-align:center; background:var(--card); border:1px solid var(--line); border-radius:16px; padding:14px 6px;}
+  .stat-box b{display:block; font-size:18px;}
+  .stat-box span{font-size:11px; color:var(--text-soft);}
+  .review{padding:14px 0; border-bottom:1px solid var(--line);}
+  .review-head{display:flex; align-items:center; gap:9px; margin-bottom:6px;}
+  .toast{
+    position:fixed; left:50%; bottom:110px; transform:translateX(-50%) translateY(20px); background:var(--text); color:var(--bg);
+    padding:12px 20px; border-radius:100px; font-size:13.5px; font-weight:600; opacity:0; pointer-events:none; transition:all .25s ease; z-index:999; white-space:nowrap;
+  }
+  .toast.show{opacity:1; transform:translateX(-50%) translateY(0);}
+  .carousel{display:flex; overflow-x:auto; scroll-snap-type:x mandatory; border-radius:0;}
+  .carousel .slide{min-width:100%; scroll-snap-align:start; aspect-ratio:1/1; display:flex; align-items:center; justify-content:center; font-size:80px; position:relative;}
+  .carousel .slide img{width:100%; height:100%; object-fit:cover; position:absolute; inset:0;}
+  .dots{display:flex; gap:5px; justify-content:center; margin-top:10px;}
+  .dots span{width:6px; height:6px; border-radius:50%; background:var(--line);}
+  .dots span.on{background:var(--text);}
+  .verified{display:inline-flex; align-items:center; gap:3px; font-size:11px; color:var(--success); font-weight:700;}
+  .link{color:var(--accent-dark); font-weight:700; cursor:pointer;}
+  .center-col{display:flex; flex-direction:column; align-items:center; text-align:center;}
+</style>
+</head>
+<body>
+<noscript>
+  <div style="max-width:420px;margin:15vh auto;padding:28px;font-family:-apple-system,sans-serif;text-align:center;background:#FBF4E7;color:#3E2A1B;border-radius:20px;">
+    <div style="font-size:20px;font-weight:700;margin-bottom:10px;">This preview can't run Renté</div>
+    <div style="font-size:14px;line-height:1.6;">You're viewing a static preview (Quick Look) which can't run the app.<br><br>Tap the <b>Share icon</b> and choose <b>"Open in Safari"</b> to use it for real.</div>
+  </div>
+</noscript>
+<div id="root">
+  <div id="app"></div>
+  <nav class="tabbar" id="tabbar">
+    <button class="tab" data-r="home" onclick="go('home')">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 11l9-8 9 8"/><path d="M5 10v10h14V10"/></svg>
+      <span>Home</span>
+    </button>
+    <button class="tab" data-r="search" onclick="go('search')">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="7"/><path d="M21 21l-4.3-4.3"/></svg>
+      <span>Search</span>
+    </button>
+    <button class="tab plus" data-r="list-create" onclick="go('list-create')">
+      <div class="plusdot"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><path d="M12 5v14M5 12h14"/></svg></div>
+      <span>List</span>
+    </button>
+    <button class="tab" data-r="inbox" onclick="go('inbox')">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>
+      <span>Inbox</span>
+    </button>
+    <button class="tab" data-r="profile" onclick="go('profile')">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="8" r="4"/><path d="M4 21c0-4 4-7 8-7s8 3 8 7"/></svg>
+      <span>Profile</span>
+    </button>
+  </nav>
+</div>
+<input type="file" id="hiddenCam" accept="image/*" capture="environment" style="display:none">
+<div class="toast" id="toast"></div>
+
+<script>
+/* ===================== DATA LAYER ===================== */
+const DB_KEY='rente_db_v2';
+const LOGO_URI='data:image/jpeg;base64,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+P9i8ksDDTwzgxYOnHhICAyrYA0P1AL/MNpbegJLr0Vnm7DogR7BfEALfi4hk+g3CMEi0Uft+hbauUAmtAaXF1KrpNpcG0b7pjL7F5x3l8tvw5jnXcQoLYVhq50hizT9pQUddn1hE7q6fSMVBs+WtzWxl7EGKO/oAYA+hAwCikZeIpp0dIFHTJ5wRaOJgKkGekxXQFaft3Ag3Y8VzGiWW8NIhAQbESLGaSldtnxzj7r/bNPFbucPT6FQKGZfaDlm01xp3mp++ovOqOPLfSXA+xleImkyhbaBNnc0PWUURsDU4mkHPG05eQJOOauXS62Gy4qGvRh9CvQ0sajnbMbGQapjo5P3PWiC1MgOMmMYdye/XYlUIdJdayoiumWLHvYZVPy3Pj/qTnX5gEGFu7wUC3QluufZrZ/fhSlMm/wBEpXH/ANUeQngSyLQ/YTExRKDNrhNfM6rqV/s9RI2yfaGexBRMXzlyy3e4uaGOvgRYnVnVndYldO9vZvqX18pUN43tV/bwzqLbbErQFG2ePXMrUdNCvmIyDrfRl+sALj8Vy4952J4wxvq6m8JejROKHh6GkvxdppZ933T4vjL9nvKcnjZzOgmivuzSP6Zqx7hgMM9KTXs6w2ifhzNAv0JyV1XBaIcB4D33BjwlYJqanqncTGiBAXYo86EkzkeKWU6S8zPsRr7fSViBsLjLrusmiD+qe6EPAU6z0FzUZJ3nZn9Soq0EcPv5/wB3/su1f1SjAG5fuzlHdmiezAaAO3goas0xest0G4E2dOzPmyLHPUOVRXY/X4mXapq4ffr9KohPRcz7fy6mQ6Q5n2y01TvE/pET+5kU6nHP8Z+UlujRnEGpUf2Lmg9wmmvwIrPRNJ999wL23+CEOoT/AJHktZVensf/AD8//9oADAMBAAIAAwAAABDzzzzzzzzzzzzzzzzRr/zzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzs/wD8888888888888888888888888888888888888M/48888888888888888888888888888888888888F2S8888888888888888888888888888888888888+/Mx/wD+/vPPPPPPPPPPPPPPPPPPPPPPPPPPPPPOIfvPNtWvG2/PPPPPPPPPPPPPPPPPPPPPPPPPPIWrbd5H/fv/AO574/XTzzzzzzzzzzzzzzzzzzzyn/zFM7//AP8A/wD/AP8A/wD/AP8A7rN/PPPPPPPPPPPPPPPPPOfH/wC3/wD/AP8A/wD/AP8A/wD/AP8A+/X+jXzzzzzzzzzzzzzzzyw7/wCsf/8A/wD/AP8A/wD/AP8AG/8Ayb779rzzzzzzzzzzzzzzzzyvp3O/f/8A/wD/APz3useG/MtT/TfzzzzzzzzzzzzzzzjS592hzu5TLvBOWsFe0l37/X3zzzzzzzzzzzzzzy7T+o5/5VRQ6z/x287/AC2/zbp9888888888888888oW/siGm/N9/6yx9K18O/zev28888888888888888se/8Av/8A7FQVU77/AP8A/wD/APe288wP8888888888888888/wBP/wD+5/8A/wD/AP8A/wD/AP8A+7XC6/c308888888888888888Po43/8A/wD/AP8A/wD/AI0z1+c/6bev888888888888888888vt8c7wRMnRX2uBec88s8a788888888888888888888s+MNe6tv+c888888888s8888888888888888888888888888888888888888888888888888888888888888888888888888888888888888888888888888888888888888888888888888888888888888888888888888888888888888888888888888888888888888888888888888888888888888/8QAKBEBAAICAgIBBAEFAQAAAAAAAQARITEQQUBRMCBQYXGhcIGxwfDR/9oACAEDAQE/EPAszEREafs2r/8AZmibn2a6EQNGairH7MCi9RwGAEH2Y0fv/EW251M9OOC/uWijZ543UHuX4OQNGf8AA5QpCjZ5nYzqfx/7MnB/uK7VK9tyxqPRFO/ouBdzPZcs/EXvLxqAiU08BI2sy+jHzKQf9PDBcEq27jqBs5Yp38wLnUQuOKMOpcrwj2IAsgC2ep8YK0TpcBbRNbaYA5/uzwr34mo1wgVZiUs8/VcqBMrEw3DcCIUvEVFhlazLGfRDVGjjtLE8FKfyhjjAIO0cvGAYyzpe4OAyeM3GVt2xhlMG1iCnREVk7NpuOaP2iteAbJFtvg2CAysKuiXrdSzTUC4QbEH0Q198IFVEVvF8VK5R2j1Asi234Dx5O0WBczLjo4AKGJs81womKll6lsvhVRDFEqWKaPB1Oj39NMqUTEuCnwK2SADHOm5Y114JjWjFy6+i/kRvE0ENtgCyUcBbPhfhEykC+IF1BYPbA0JtEdxCq28cqtssbZErw9THekH88Vifc/aW9z9pT3CYPXGwYLRPw31CBJWL8YPTDvguyU9SnqfpHoIt3Ftv9W//xAAjEQEAAgICAgIDAQEAAAAAAAABABEhMRBBQFEgYTBQcXDw/9oACAECAQE/EPAohA3n9NunFr+mq1GznUAKH6ZWyoJyRKl/pnb/ANuBRU7IcasrAOvPS7npnY8rvPt5VvAHT5j1JZuYGWV+0v1iZbZXuU9fFD1KrTAfuB7x41wwbL4Wa2sSm38xcD8MtbmkagBB1MEANfmaGIEM8J2blS/CTRiI0xFRPa/GtS/fC1LMmo7L5P4nwqktL7lSLdD5xQuKcCVL4JBgMaIcQhTqCKJUZ46xWHwbtyyVjxUOMv6nb1KXUWKlRNUl6tEMfUlWXcQSmW1cHk7YaPgKkwKK4VJhQFRbhUUbmahRliDEV5dxEeuELcACj50Ew4hZogVjwDny8VEJUA4JS274W3AGvhfwrkBbLFwalJbwgtb5X+S3TLXnneMEL78Fks2QfAINRV3EwIjpl+XCGjwrMwFhg34rqIRXUc7iaHCAMHCBRUpJTBvw9pFNZiP0h7paW9T+J/Et64re5iCaINuA+/klty814y/Ueqf1Le5f3P6gfcB6gGj/AFv/xAAsEAEAAQMCBQMEAwEBAQAAAAABEQAhMUFRYXGBobEQIJFQwdHwMEBg4fGQ/9oACAEBAAE/EPoKgS2K4w9E+aDteEkf8aYpd21dDeT05pdil0VyW8wrLTQIlyHEV1tFqRYK4h5X+MLJNob3Y5TQATBWnlU1i0UCAAwBRFsLk2x3RSKG1oDwBhfj/GT+AjBMk9aUplG5IH4D0G+dQSxXsNH0kY4n+MPTYDzIsAl71HjyS2LRNMkBARA/S1IhTjoF23Z8VBtMGkxmYONM/eb1DE/4uLDPC97E9aESTFRIuQaEruG1TV3BSLKm0lqBJlGOMqAXfkob9/8AF2H8HSQ9KU1kBnYu09eHZ24Ti148qmamOidFyzOtI0Bms2ll5TSBBuQzEev+LOYyiVEqkwiqjPiV8ulqmzpjCw5BKba96j4F4Ed7o7VJI+Mbicg1oySWGTRd7f4tUQSp0ClWLWMhEvxzobllTjCfQTcO/Rkoz1ngZ0W1KKWluHfccf8AFXErXUBta1BDaZhcS4ooyoCA9Rg3ylrYb8atASnktw04NFBzKY+ZZak7hwjtTZ7OR51nlOLL2oZJ7oqh3wBqgs6nG96eHBiGM88UOScEHb/AG4ci54poVKRzYX53ZrLugzsHA9tjCCBKeaOrB1WoNBnAk+VRpcOa/FZktkBehRmDXpz0mlCIOJP5pRsMpHRmmkcQlEctMDJ3EvJgzVjZZeMT9bUM0mgfMHwpe1YElgjrgj4phkksPZD3KIEVA1TVlfkWq8g+4b7HD2uyzIgqaGjIR8DNTYhbd0srsMJ4K+xY8Kv3e7VLkFMOGcmukzWx8xU3mMtYzqL8GoOPP7rKhCd/GP1iJM4r0gvTJcxfTcOOtFQZyfIqvSjDHvtYazKhnCwmgPQQaN73zRyhgADgFKiDKJFNJgYXPqWpNkVi2OMA+a1bMMEc5XxWSU5FHahvUZMHsveotCNe3TFYmJqo/KV2Io8e46CNkmp+6/pJUrDni8hUa3ymD5F70Xow1KO6dq54Sy/iKHNV1ZeHtQZ5KxzG/wBTtHo6g3aIu9YkIuqm70oEq3YBwhk50Pg+Ep+c+j9KaZHQp4t5JabvQDmHdohlhUD70ADJuXyzQAAAGA/pIXzQjvTLMpZHeKH/AAGPX81A43VlvOirVJOH6W0AfBk+9CIJh9goqi0Gmbi6UOAYFAFKgXQBTrBIgP3j4pXqK0mzFCcvN0d4okP6IO39lMzkaxyaGhN5bgE1MUUrb8FxUySfSSgwkTcwd/FOKKITQ2T5PYj0ul8Bl6UMbKUQcTTy8KPMN0sHDd7UVKMBP7zccDRvwabmNNPBfx8VOAs8ifRxAqIqekbg3BQx5R1sPw+Y9BlPMIFQDxiO44Nvn4ovfAom2jXxwo2kQOAOB/cHFLhnYoEjQg0MCsdvZAcs8iVfAsLqfvWgMqQkR+ilwpZPQDWomKTJd/pb1l1qcF4PWN62JijcYx5o5zxCH94MROeQm9+/iigHnAvtA5EI6OicSmdKfMODpf5+h3nI3R2rBb5+AKIp1slJ0faLYZuSeqbVPBxd7AWqwsnh/VUBWwU46YCk8+nuKl3m5RQJnKLc84qRtMJZdk9xUyqNW4evlpEwWVfVPv8ARIq2skPuNDL3WjtsfXb3cg3djzRMEgjH9cNCiDeLbqyzjAP/ANaHlEhhAjQnVPYFgDivB9+lM6K53RAeChoJwuARi9S79h4fo9LFPeAxb2ByNwcSKdgkC2PwSdF+iItc9ABSpHAltx+4qYxZN+w1HQCCtmDkZelABAQHo2jWs98aRjWWJj7u1PMAhbmq5/NYFMwvXAx1p06xEp4jf2OKIoMRU0sWxGtQscCVt2Vt8VDvvRgmbAHoIQCqEHHpimO/TQKBrHzTwoLBBaaibkhmP5X7am9jws+XlR9Q5L6Q40eWjwntyIDjQnKACpWN3X2BA4Y0T7BSTkl9cxecT1+hppiXsTg8HG+lGzdhgo5FsUu4O9BwCIau6/Poym2HAgAdJoOqYdUhr1pxDhYUnkXoMSKM2bJxEudKhwAhqJJ7RZIbrFFSZxT7ZzCApwLnWi4i3ueF2sFqD8Q5aqXYd6NSN2VpO/qwoYAyrj6TQsK4tipsgjqJ9CaHEWkFIXhFd6IPweh/MlyBHkqR5dAlLjEtsaUbHtCJ4rledR4leS32qWmMY5u/drHQIGWxwPYCJAErRSC631M/emls2HAT6El7gDIWe6D/AJR9CHHeemh6DiI/BX7UAAGD0dTIecz5oJyJA4xfv6IMZLnn7IpNd4nl9h8SaT5d3YKW5Q3ZHttSWRJa7tRAIDjzPZKaTvBy96ERbbULdWPgaEoDACwRTMUHkfR3DBLnwVLJ645MQ4vYfRlUCuB+tRMxJHIo/E6t1sGrUDTitPueKgE/bzQ9A9JIdbHOj3JZyaxNC6OWM9S9BVQlfwKiyg1HPft7SsBO9gPM9KQdHWDem5Rfvn9BBkAEq6UgNhJwcfi/P2heQBWacB8mC+PR85FLAZagq2D2LS8glof4GWwEHq5YBKuhUwWItwOH4letXQWkNw7rRbMSSYcrzrGyByCnzQTP3gy0eVFNgTgTekchS5FXNIiLze1AWAn1lp0LUkhuRSB4N4PZpoOzpAbq1p0ee1IFDYOrpyMehSwWMxavCplSEAc6NhDrB4f8qUWeCXeBsexCVdz8q7S2ePZ953pP29bsS2sTofHmrDTVyCjSt53CDzP0FIW61se00T8DbuZ8x09sJ3FNrDu1lwYuJHiaghZgy5C7Slkxtf0kNOFJ40dMr93bG/oUGKESatBj5jsDMOpS/QCHaSPvUH5d1UstsZzxpc7clnCXmKvQbxfj+KDWPMNhq0iVXFeLV7rUH6FldctQGwFxFtXFULCmD58eos5XYFrDJHisUYCcxbHWihSrRcNjd4+qICZEmoMUpgZoCAAaB/EeFI3FD5o5YhImpT3jHcPihoqiZA3iimoBst7/AGOtQ43Ea6nVn6DNOGTeIKEcQAPbZAkDcZe7QbAY5mR7tOrLdhuhUq2sECwOzB54+gd55Pg40dIbHDV8tQXCy1Wq0TiEeuiiDTVfYUJvHEQelJLRGXRYrGyhZOMLvyVLadFivAcClcQyNfgNuD0OzbChBtA1dDBLgBpfP8ltBLgmnJ6IoHacTwq5O0GWCYpuShCEQQE33omL59TXtIQAZaEC2m6WPy5rR2YFNBd8W6VLI25N1KCWwUjs5ktpvS/0IE/iy6/hSkPD2yYkKmyy9ilooB51zzT1pXH2HmjC5hj0zc4UjgORortfFDcnVg4m9SmCHB4OHrHKHEd+RrRmviLvNQ0HTtB+aspQEB0P4ZqxuW+9LtBqeFGQo2qCWahTyFeAKXaKPmGKZTs3sEnGpaMj8CQo5UGLgp3NVtruKhYSWrSL324UZYhCOpQIC0ELEY9kn/PMH56/HokSIENAdaacVyqYQ+x1p2/FHplR3fK+hB+wZNDH3KWwRPU9rJoFDeC/BRNQEAaFIBEEbI055JgluWlAEM6NerVyQyX5z/EoCrAZaTSWRaZywUMNYiOCoeGkqKVCrB4Ck47oWYiHDNKvpGnFQ042WhazGHN7VFMkCXJUM8IfmjDEIR1KlAkAmRgwcqUUCskNd/4HZgJVYCgHpIf/AFPGkwKlGVfVZglsA7lM3OpKPD6GeXQiTNJpCEyp05PZPanL8zJD/De9kSQT1pRzGu4FTY0qSJoll8USEgUChRoXw54VOpIhlGzDkWNqdRmHAEkY5xSCIkjkoGlBgaSz5N6sbuIskzRigS7oB4CgwAiYg3/kdoQJkD5CVDRrWQPnxV8L/wC5q+4+O6uzzNaMJGy0uarfEU7SHRbuE70gEmG9yPoNtIy8iXpZ2s6UJycN1qOyfwMYOgoUJYvscaMY6rCwMuBzO1ZyFibEm5nM1E0FPMC5GZdKiLiVzISRAn4KsImhZAibYSPNCxSZCjJCQzakRZhWDMMJJwoICKYz0VBt/Sic0mEdkHRkdKmg1Ky4m8c71azAhHtI1mJh/pdtzpsA7Um4NjoUUDDAEfQmvqAkRyNHDtjHh4jDvHKj1lKPeCMmo3GpICKO+xk1tmjQC03570AAAGA/rjUiVYCsQJGS569PmjhAZZHT/XjWLsARQ15uZOHGnestCJN/QJYKVLDANuAfagAAAGA9bWiDhl9CZlJN31XBoDTi4LKFBCCXMNy1/vLw0mYKwVxDB/NTmZSNBrltAu82lAqgGVohfEBSDxpNLy1nNUlSRBBnr040ikREsjSGMCItonTNAAAQGnrLeDZOlPmxAhAk6F6g4eYJ9PoT2kcoWBs8aZWnAyHCjgOwM/JrQyLJT5Ayf2WZ1kQOrSjhElE88eakMYLkev4oU/7LJ2USKNBFICoAytFH5ALnpU6dvoXHagqaLhPOfWKQRmFhIHc9SjsAH3d38dPRGwBKuhSLSdDk/AnT0XaIoNQfRJZRbC/LcUHdhEX388KMk1yLpioPhCIcz7jTphViJ5LfMUCWcFD1P6ZjrQR8KXtSfTe7eXtUirYCz1nwVxqWYUJCvBK9fTo/onlSLDUHDi7HOKXkS80vJcHfnRqArh1Sv7WjtLmZePow+jTHVAtCdgkDtv0tihGCDat4uh3xRJimteon3+jFaiAA0kcXZT4C+/zWni4J4x/yak8joiHXJQ8aNvsj3qLDmAz82e9RhAMoj4T71DD+t6O6hy+/ssqMvWJn3oxH5ChcfNUm5Um9QaPmksh1o2SdxKn5PZm81MiG0z8FJ7EQjuz2qbBNGR8AeatMtoS96ZbGZOxY7VHsC1bsx2rheRB6QIHAKPqFk4X94VGuqzx5XZ6FAshqkvIZerWECAw6HvOopJswnhfUGAUQjqU6kXlywPk9fpOSDRB3rNE5J8OT5qUdUl45pcUTDPFHk5dFhoiS+Ip4ykeKw/OtFJjxlf5oPB/Tet6kPeZ+anu+dCZl/rpWiFxH71g/zL5oqDNhHoLIBxfSeS2/baMcpxbVDKrIwfH5owWoYx6H5q3X4gpc9/5gDAGtqhIRgSebU0Wbos3fH0rhqwfKlkD6qrys0sisF5iFNOvU6wMjMzT3CP4ryMVQ4Gu3Op2VUD286VjiSw8V3ZOI71jRdm1c0MhpQR6hhUM3TV6DCOwkPz/UACAg4fUMmuZS+V6amz8av/Lfig8FyFGIuQoALH/z7//Z';
+let db=null;
+let state={route:'onboarding', params:{}, history:[], listSlot:null, camTarget:null, listDraft:null, bookingDraft:null, searchQ:'', searchCat:null};
+
+function uid(p){return p+'_'+Math.random().toString(36).slice(2,9);}
+function esc(s){return (s||'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));}
+function fmtKr(n){return Math.round(n).toLocaleString('sv-SE')+' kr';}
+function daysBetween(a,b){return Math.max(1,Math.round((new Date(b)-new Date(a))/86400000));}
+function addDays(d,n){const x=new Date(d); x.setDate(x.getDate()+n); return x.toISOString().slice(0,10);}
+function today(){return new Date().toISOString().slice(0,10);}
+function fmtDate(d){const dt=new Date(d); return dt.toLocaleDateString('en-GB',{day:'numeric',month:'short'});}
+function timeAgo(t){const s=(Date.now()-new Date(t))/1000; if(s<60)return 'just now'; if(s<3600)return Math.floor(s/60)+'m ago'; if(s<86400)return Math.floor(s/3600)+'h ago'; return Math.floor(s/86400)+'d ago';}
+function stars(r){const f=Math.round(r); return '★'.repeat(f)+'☆'.repeat(5-f);}
+function toast(msg){const t=document.getElementById('toast'); t.textContent=msg; t.classList.add('show'); clearTimeout(window._tt); window._tt=setTimeout(()=>t.classList.remove('show'),2200);}
+
+const CATS=[
+  {id:'dresses',label:'Dresses',em:'👗'},
+  {id:'suits',label:'Suits',em:'🤵'},
+  {id:'halloween',label:'Halloween',em:'🎃'},
+  {id:'outerwear',label:'Outerwear',em:'🧥'},
+  {id:'shoes',label:'Shoes',em:'👠'},
+  {id:'accessories',label:'Accessories',em:'💍'},
+  {id:'formal',label:'Formalwear',em:'👘'},
+  {id:'sport',label:'Sportswear',em:'🎽'},
+];
+const OCCASIONS=['Party','Halloween','Dinner','Formal','Themed Event','Everyday'];
+const CONDITIONS=['New with tags','Like new','Good','Fair'];
+const SIZES=['XS','S','M','L','XL','36','37','38','39','40','41','42','One size'];
+const SPOTS=[
+  {id:'library',name:'JU Library — Main Entrance'},
+  {id:'karen',name:'Kåren (Student Union House)'},
+  {id:'ruth',name:'Ruth Building — Café Lobby'},
+  {id:'halsohogskolan',name:'Hälsohögskolan — Lobby'},
+  {id:'busstop',name:'Campus Bus Stop, Barnarpsgatan'},
+  {id:'vaxholmen',name:'Vaxholmen Student Housing — Gate'},
+];
+function catEmoji(c){return (CATS.find(x=>x.id===c)||{}).em||'👕';}
+function catLabel(c){return (CATS.find(x=>x.id===c)||{}).label||c;}
+function placeholderGrad(c){
+  const g={
+    halloween:'linear-gradient(135deg,#3A3025,#6B4C36)',
+    formal:'linear-gradient(135deg,#33302B,#6B5D4F)',
+    dresses:'linear-gradient(135deg,#F0E6D6,#DCC3A0)',
+    suits:'linear-gradient(135deg,#E3D7C2,#B99B72)',
+    outerwear:'linear-gradient(135deg,#EAE3D6,#CBB9A4)',
+    shoes:'linear-gradient(135deg,#F2ECE0,#DCC3A0)',
+    accessories:'linear-gradient(135deg,#F0E7DC,#C9A8A0)',
+    sport:'linear-gradient(135deg,#E4E9E0,#A9C0B2)',
+  };
+  return g[c]||'linear-gradient(135deg,#EDE7DC,#D3C4AE)';
+}
+const AV_COLORS=['#C9A876','#B8AFC9','#A8C0B8','#C9A8A8','#A8B7C9','#CBB08A','#9FB6A8','#C2A6C4'];
+function avatarColorFor(id){let h=0; for(const c of id) h=(h*31+c.charCodeAt(0))>>>0; return AV_COLORS[h%AV_COLORS.length];}
+function initials(name){return name.split(' ').map(w=>w[0]).slice(0,2).join('').toUpperCase();}
+function avatarHtml(user,size){size=size||34; const fs=Math.round(size*0.4);
+  if(user.avatarPhoto) return `<div class="avatar" style="width:${size}px;height:${size}px;padding:0;overflow:hidden;"><img src="${user.avatarPhoto}" style="width:100%;height:100%;object-fit:cover;"></div>`;
+  return `<div class="avatar" style="width:${size}px;height:${size}px;background:${user.color||avatarColorFor(user.id)};font-size:${fs}px">${initials(user.name)}</div>`;
+}
+
+function seedDB(name,program,email){
+  const now=new Date();
+  const users={};
+  const seedPeople=[
+    ['u_emma','Emma Lindqvist','Business & Marketing',4.9,'Selling my closet gaps one rental at a time. Always packs items clean & ironed.'],
+    ['u_oskar','Oskar Berg','Mechanical Engineering',4.7,'Suits, blazers and the occasional costume. Fast replies!'],
+    ['u_alice','Alice Nyström','Fashion & Textile Design',5.0,'Design student — my pieces are curated and well cared for.'],
+    ['u_noah','Noah Karlsson','Informatics',4.6,'Renting out formalwear so it does not just sit in the closet.'],
+    ['u_wilma','Wilma Söderberg','Marketing',4.8,'Party outfits and outerwear. Happy to help with sizing questions.'],
+    ['u_leo','Leo Andersson','Economics',4.5,'Halloween is my favorite season. Costumes available all October.'],
+  ];
+  seedPeople.forEach(([id,nm,prog,rating,bio])=>{
+    users[id]={id,name:nm,program:prog,ratingAvg:rating,ratingCount:8+Math.floor(Math.random()*30),bio,verified:true,joined:addDays(today(),-(200+Math.floor(Math.random()*300))),color:avatarColorFor(id)};
+  });
+  users['u_me']={id:'u_me',name:name||'You',program:program||'Jönköping University',email:email||'',ratingAvg:5.0,ratingCount:0,bio:'New to Renté — excited to start renting & lending!',verified:!!(email&&email.includes('ju.se')),joined:today(),color:avatarColorFor('u_me')};
+
+  const items={};
+  function mkItem(o){const id=uid('it'); items[id]={id,ownerId:o.owner,title:o.title,category:o.cat,size:o.size,condition:o.cond,desc:o.desc,price:o.price,deposit:o.deposit,images:o.images||['placeholder'],occasions:o.occ,availFrom:today(),availTo:addDays(today(),60),location:o.loc||SPOTS[0].name,createdAt:addDays(today(),-Math.floor(Math.random()*20)),trending:!!o.trend,distanceLabel:o.dist||'Near campus',favoritesCount:Math.floor(Math.random()*30)}; return id;}
+
+  const idHalloween=mkItem({owner:'u_emma',title:'Black Halloween Witch Costume',cat:'halloween',size:'M',cond:'Good',desc:'Full witch look incl. dress, hat and cape. Worn once last Halloween, freshly washed. Great for JU Halloween parties!',price:89,deposit:400,occ:['Halloween','Party','Themed Event'],trend:true,dist:'5 min from Kåren'});
+  mkItem({owner:'u_alice',title:'Red Cocktail Dress – Zara',cat:'dresses',size:'S',cond:'Like new',desc:'Worn twice for dinners. Figure-hugging cut, midi length. Dry cleaned after every rental.',price:99,deposit:500,occ:['Dinner','Party'],trend:true,dist:'On campus'});
+  mkItem({owner:'u_oskar',title:'Navy Blazer Suit – Slim Fit',cat:'suits',size:'M',cond:'Good',desc:'Full 2-piece navy suit, slim fit. Great for formal dinners, interviews or graduation.',price:79,deposit:600,occ:['Formal','Dinner'],dist:'Near Ruth Building'});
+  mkItem({owner:'u_wilma',title:'Beige Trench Coat',cat:'outerwear',size:'M',cond:'Like new',desc:'Classic beige trench, barely worn. Perfect for autumn in Jönköping.',price:69,deposit:450,occ:['Everyday'],dist:'Near Vaxholmen'});
+  mkItem({owner:'u_emma',title:'Silver Heels – Size 38',cat:'shoes',size:'38',cond:'Good',desc:'Comfortable block heel, silver strap sandals. Great for parties.',price:49,deposit:300,occ:['Party','Dinner'],dist:'5 min from Kåren'});
+  mkItem({owner:'u_alice',title:'Pearl Necklace & Earring Set',cat:'accessories',size:'One size',cond:'New with tags',desc:'Never worn, still tagged. Elevates any outfit for dinners or formal events.',price:39,deposit:250,occ:['Formal','Dinner'],dist:'On campus'});
+  mkItem({owner:'u_noah',title:'Black Tie Tuxedo',cat:'formal',size:'L',cond:'Good',desc:'Full tuxedo incl. bowtie and cummerbund. Ideal for balls and formal dinners.',price:129,deposit:800,occ:['Formal'],trend:true,dist:'Near Hälsohögskolan'});
+  mkItem({owner:'u_wilma',title:'Golden Sequin Dress',cat:'dresses',size:'M',cond:'Like new',desc:'Show-stopping sequin dress, worn once. New Year\'s Eve energy.',price:109,deposit:550,occ:['Party','Themed Event'],trend:true,dist:'Near Vaxholmen'});
+  mkItem({owner:'u_leo',title:'Vampire Cape & Costume Set',cat:'halloween',size:'L',cond:'Good',desc:'Dramatic vampire cape, shirt and accessories. A Halloween party favorite.',price:75,deposit:350,occ:['Halloween','Themed Event'],trend:true,dist:'Near Bus Stop'});
+  mkItem({owner:'u_noah',title:'Denim Jacket – Vintage',cat:'outerwear',size:'M',cond:'Fair',desc:'Vintage wash denim jacket with some character. Great casual layer.',price:55,deposit:300,occ:['Everyday'],dist:'Near Hälsohögskolan'});
+  const idSundress=mkItem({owner:'u_me',title:'Blue Floral Sundress',cat:'dresses',size:'S',cond:'Like new',desc:'Light floral sundress, perfect for spring dinners or garden parties.',price:59,deposit:350,occ:['Dinner','Everyday'],dist:'Your listing'});
+  const idBoots=mkItem({owner:'u_me',title:'Black Ankle Boots – Size 39',cat:'shoes',size:'39',cond:'Good',desc:'Versatile black ankle boots, goes with everything.',price:45,deposit:280,occ:['Everyday','Party'],dist:'Your listing'});
+
+  const reviews={};
+  function addReview(userId,from,rating,text,daysAgo){(reviews[userId]=reviews[userId]||[]).push({id:uid('rv'),from,rating,text,time:addDays(today(),-daysAgo)});}
+  addReview('u_emma','u_oskar',5,'Costume was exactly as described, super easy pickup at Kåren!',12);
+  addReview('u_emma','u_alice',5,'Emma is so easy to communicate with, highly recommend.',30);
+  addReview('u_alice','u_wilma',5,'Dress was immaculate, exactly like the photos.',20);
+  addReview('u_oskar','u_leo',4,'Good suit, slightly big but owner was flexible on return time.',18);
+  addReview('u_noah','u_emma',5,'Tuxedo made my formal dinner — great condition.',9);
+  addReview('u_wilma','u_noah',5,'Fast replies and flexible pickup location.',25);
+  addReview('u_leo','u_alice',5,'Cape was a hit at the Halloween party, thank you!',5);
+  addReview('u_me','u_oskar',5,'Boots were in great shape, smooth handover at the library.',3);
+
+  const bookings={};
+  const wallet={balance:1000,transactions:[]};
+  function tx(type,amount,desc,daysAgo){wallet.transactions.push({id:uid('tx'),type,amount,desc,time:addDays(today(),-(daysAgo||0))}); wallet.balance+=amount;}
+  tx('bonus',1000,'Welcome bonus',6);
+
+  // booking 1: requested rental of my sundress by Emma
+  const b1=uid('bk');
+  bookings[b1]={id:b1,itemId:idSundress,renterId:'u_emma',ownerId:'u_me',status:'requested',start:addDays(today(),3),end:addDays(today(),5),meetup:SPOTS[1].name,price:59,deposit:350,createdAt:addDays(today(),0),returnPhotos:[]};
+
+  // booking 2: return_pending, my boots rented by Oskar, awaiting my confirmation
+  const b2=uid('bk');
+  bookings[b2]={id:b2,itemId:idBoots,renterId:'u_oskar',ownerId:'u_me',status:'return_pending',start:addDays(today(),-6),end:addDays(today(),-3),meetup:SPOTS[0].name,price:45*3,deposit:280,createdAt:addDays(today(),-7),returnPhotos:['placeholder']};
+
+  // booking 3: I'm renting Emma's witch costume, confirmed & upcoming
+  const b3=uid('bk');
+  const days3=2;
+  bookings[b3]={id:b3,itemId:idHalloween,renterId:'u_me',ownerId:'u_emma',status:'confirmed',start:addDays(today(),37),end:addDays(today(),39),meetup:SPOTS[1].name,price:89*days3,deposit:400,createdAt:addDays(today(),-1),returnPhotos:[]};
+  tx('rental_payment',-(89*days3),'Rental payment — Witch Costume',1);
+  tx('deposit_hold',-400,'Deposit hold — Witch Costume',1);
+
+  const notifications=[
+    {id:uid('nt'),type:'system',text:'Welcome to Renté! Complete your profile and list an item to start earning.',time:addDays(today(),-6),read:true},
+    {id:uid('nt'),type:'booking',text:'Emma Lindqvist wants to rent your Blue Floral Sundress.',time:addDays(today(),0),read:false,route:{r:'booking-detail',p:{id:b1}}},
+    {id:uid('nt'),type:'booking',text:'Oskar Berg returned Black Ankle Boots — confirm condition to release your earnings.',time:addDays(today(),-3),read:false,route:{r:'booking-detail',p:{id:b2}}},
+    {id:uid('nt'),type:'payment',text:'Your booking for Black Halloween Witch Costume is confirmed.',time:addDays(today(),-1),read:true,route:{r:'booking-detail',p:{id:b3}}},
+  ];
+
+  db={me:'u_me',users,items,bookings,messages:{},wallet,favorites:[],notifications,reviews,onboarded:true};
+  saveDB();
+}
+let storageOK=true;
+function saveDB(){
+  try{ localStorage.setItem(DB_KEY,JSON.stringify(db)); }
+  catch(e){ if(storageOK){ storageOK=false; console.warn('Renté: local storage unavailable, changes will not persist.',e); } }
+}
+function loadDB(){
+  try{
+    const raw=localStorage.getItem(DB_KEY);
+    if(raw){db=JSON.parse(raw); return true;}
+    return false;
+  }catch(e){ storageOK=false; console.warn('Renté: local storage unavailable, starting a fresh in-memory session.',e); return false; }
+}
+function me(){return db.users[db.me];}
+function unreadCount(){return db.notifications.filter(n=>!n.read).length;}
+
+/* ===================== ROUTER ===================== */
+function go(route,params){params=params||{}; state.history.push({route,params}); state.route=route; state.params=params; render();}
+function back(){ if(state.history.length>1){state.history.pop(); const prev=state.history[state.history.length-1];} const prev=state.history.length?state.history[state.history.length-1]:{route:'home',params:{}}; state.route=prev.route; state.params=prev.params; render();}
+function replace(route,params){params=params||{}; state.history[state.history.length-1]={route,params}; state.route=route; state.params=params; render();}
+
+const TAB_ROUTES=['home','search','inbox','profile'];
+
+function render(){
+  const app=document.getElementById('app');
+  const r=state.route,p=state.params;
+  let html='';
+  try{
+    if(r==='onboarding') html=screenOnboarding();
+    else if(r==='home') html=screenHome();
+    else if(r==='search') html=screenSearch();
+    else if(r==='item') html=screenItemDetail(p.id);
+    else if(r==='booking') html=screenBooking(p.id,p.step||1);
+    else if(r==='booking-detail') html=screenBookingDetail(p.id);
+    else if(r==='list-create') html=screenListCreate();
+    else if(r==='inbox') html=screenInbox();
+    else if(r==='chat') html=screenChat(p.threadId);
+    else if(r==='wallet') html=screenWallet();
+    else if(r==='notifications') html=screenNotifications();
+    else if(r==='favorites') html=screenFavorites();
+    else if(r==='profile') html=screenProfile(p.userId||db.me);
+    else if(r==='edit-profile') html=screenEditProfile();
+    else html=screenHome();
+  }catch(e){ html=`<div class="screen"><div class="empty"><span class="em">⚠️</span>Something went wrong.<br><small>${esc(e.message)}</small></div></div>`; console.error(e); }
+  app.innerHTML=html;
+  app.scrollTop=0;
+  document.getElementById('tabbar').style.display=TAB_ROUTES.includes(r)?'flex':'none';
+  document.querySelectorAll('.tab').forEach(t=>t.classList.toggle('active',t.dataset.r===r));
+}
+
+/* ===================== SHARED PARTIALS ===================== */
+function topbar(title,opts){opts=opts||{}; return `
+  <div class="topbar">
+    <button class="iconbtn" onclick="${opts.onBack||'back()'}">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M15 18l-6-6 6-6"/></svg>
+    </button>
+    <h1>${esc(title)}</h1>
+    ${opts.right||'<div style="width:36px"></div>'}
+  </div>`;
+}
+
+function itemCardHtml(item){
+  const owner=db.users[item.ownerId];
+  const isFav=db.favorites.includes(item.id);
+  const img=(item.images&&item.images[0]&&item.images[0]!=='placeholder')
+    ? `<img src="${item.images[0]}">`
+    : `<div style="position:absolute;inset:0;background:${placeholderGrad(item.category)};display:flex;align-items:center;justify-content:center;font-size:44px;">${catEmoji(item.category)}</div>`;
+  return `
+  <div class="card item-card" onclick="go('item',{id:'${item.id}'})">
+    <div class="item-img">
+      ${img}
+      ${item.trending?'<span class="badge-trend">🔥 Trending</span>':''}
+      <button class="fav-btn ${isFav?'active':''}" onclick="toggleFav(event,'${item.id}')">♥</button>
+    </div>
+    <div class="item-info">
+      <div class="item-title">${esc(item.title)}</div>
+      <div class="item-meta">${esc(item.size)} · ${esc(item.condition)}</div>
+      <div class="item-price"><b>${fmtKr(item.price)}</b>/day</div>
+      <div class="item-owner">${avatarHtml(owner,16)} ${esc(owner.name.split(' ')[0])} <span class="stars">★</span> ${owner.ratingAvg.toFixed(1)}</div>
+    </div>
+  </div>`;
+}
+function toggleFav(ev,id){ev.stopPropagation(); const i=db.favorites.indexOf(id); if(i>-1)db.favorites.splice(i,1); else db.favorites.push(id); saveDB(); render();}
+
+/* ===================== ONBOARDING ===================== */
+function screenOnboarding(){
+  return `
+  <div class="screen center-col" style="padding-top:10vh;">
+    <img src="${LOGO_URI}" class="logo-img" style="width:240px;margin-bottom:8px;">
+    <div style="color:var(--text-soft);font-size:14.5px;margin-bottom:32px;max-width:280px;">Rent, wear, return.<br>Student style, shared across Jönköping University.</div>
+    <div style="width:100%;text-align:left;">
+      <div class="field"><label>Full name</label><input type="text" id="ob-name" placeholder="e.g. Alex Svensson"></div>
+      <div class="field"><label>Program / field of study</label><input type="text" id="ob-program" placeholder="e.g. International Business"></div>
+      <div class="field"><label>University email (optional)</label><input type="email" id="ob-email" placeholder="you@ju.se"></div>
+    </div>
+    <button class="btn btn-primary" onclick="finishOnboarding()">Get started</button>
+    <div style="font-size:11.5px;color:var(--text-faint);margin-top:14px;max-width:280px;">This is a self-contained demo — your data stays only on this device.</div>
+  </div>`;
+}
+function finishOnboarding(){
+  const name=document.getElementById('ob-name').value.trim()||'Student';
+  const program=document.getElementById('ob-program').value.trim()||'Jönköping University';
+  const email=document.getElementById('ob-email').value.trim();
+  seedDB(name,program,email);
+  go('home');
+}
+
+/* ===================== HOME ===================== */
+function screenHome(){
+  const m=me();
+  const allItems=Object.values(db.items).filter(i=>i.ownerId!==db.me);
+  const trending=allItems.filter(i=>i.trending).slice(0,6);
+  const recommended=allItems.slice().sort(()=>0.5-Math.random()).slice(0,6);
+  const nearby=allItems.slice(0,4);
+  return `
+  <div class="home-header">
+    <div class="logo-wrap">
+      <img src="${LOGO_URI}" class="logo-img" style="width:104px;">
+      <div class="header-actions">
+        <button class="iconbtn" style="position:relative" onclick="go('favorites')">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20.8 4.6a5.5 5.5 0 0 0-7.8 0L12 5.6l-1-1a5.5 5.5 0 0 0-7.8 7.8l1 1L12 21l7.8-7.6 1-1a5.5 5.5 0 0 0 0-7.8z"/></svg>
+        </button>
+        <button class="iconbtn" style="position:relative" onclick="go('notifications')">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M18 8a6 6 0 0 0-12 0c0 7-3 9-3 9h18s-3-2-3-9"/><path d="M13.7 21a2 2 0 0 1-3.4 0"/></svg>
+          ${unreadCount()?'<span class="badge-dot"></span>':''}
+        </button>
+      </div>
+    </div>
+    <div class="greeting">Hej, ${esc(m.name.split(' ')[0])} 👋<small>Find your next look around JU</small></div>
+    <div class="wallet-chip" onclick="go('wallet')">
+      <div class="dot">💳</div>
+      <div><div style="font-size:10.5px;color:var(--text-soft);">Wallet balance</div><b>${fmtKr(db.wallet.balance)}</b></div>
+    </div>
+    <div class="searchbar" onclick="go('search')">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="7"/><path d="M21 21l-4.3-4.3"/></svg>
+      <input readonly placeholder="Search dresses, costumes, suits…">
+    </div>
+  </div>
+  <div class="screen" style="padding-top:0;">
+    <div class="chips-row">
+      ${CATS.map(c=>`<div class="chip" onclick="go('search',{cat:'${c.id}'})"><span class="em">${c.em}</span>${c.label}</div>`).join('')}
+    </div>
+
+    <div class="section-title"><h2>🔥 Trending for events</h2><a onclick="go('search')">See all</a></div>
+    <div class="hscroll">${trending.map(itemCardHtml).join('')||'<div class="empty">No trending items yet</div>'}</div>
+
+    <div class="section-title"><h2>Recommended for you</h2><a onclick="go('search')">See all</a></div>
+    <div class="grid2">${recommended.map(itemCardHtml).join('')}</div>
+
+    <div class="section-title"><h2>📍 Available near campus</h2></div>
+    ${nearby.map(i=>{const o=db.users[i.ownerId]; return `
+      <div class="card list-row" style="margin-bottom:10px;" onclick="go('item',{id:'${i.id}'})">
+        <div class="item-img" style="background:${placeholderGrad(i.category)}">${(i.images&&i.images[0]!=='placeholder')?`<img src="${i.images[0]}">`:catEmoji(i.category)}</div>
+        <div class="rowinfo">
+          <div class="item-title">${esc(i.title)}</div>
+          <div class="item-meta">${esc(i.distanceLabel)} · ${avatarHtml(o,14)} ${esc(o.name.split(' ')[0])}</div>
+          <div class="item-price"><b>${fmtKr(i.price)}</b>/day</div>
+        </div>
+      </div>`;}).join('')}
+  </div>`;
+}
+
+/* ===================== SEARCH ===================== */
+function screenSearch(){
+  if(state.params.cat) state.searchCat=state.params.cat;
+  const q=(state.searchQ||'').toLowerCase();
+  let results=Object.values(db.items).filter(i=>i.ownerId!==db.me);
+  if(state.searchCat) results=results.filter(i=>i.category===state.searchCat);
+  if(q) results=results.filter(i=> i.title.toLowerCase().includes(q) || i.desc.toLowerCase().includes(q) || (i.occasions||[]).some(o=>o.toLowerCase().includes(q)) );
+  return `
+  <div class="screen" style="padding-top:16px;">
+    <div class="logo" style="font-size:20px;margin-bottom:14px;">Browse</div>
+    <div class="searchbar" style="margin:0 0 14px;">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="7"/><path d="M21 21l-4.3-4.3"/></svg>
+      <input id="search-input" placeholder="Search dresses, costumes, suits…" value="${esc(state.searchQ||'')}" oninput="onSearchInput(this.value)">
+    </div>
+    <div class="chips-row" style="margin-bottom:6px;">
+      <div class="chip ${!state.searchCat?'active':''}" onclick="setCat(null)">All</div>
+      ${CATS.map(c=>`<div class="chip ${state.searchCat===c.id?'active':''}" onclick="setCat('${c.id}')"><span class="em">${c.em}</span>${c.label}</div>`).join('')}
+    </div>
+    <div style="font-size:12.5px;color:var(--text-soft);margin:14px 0 10px;">${results.length} item${results.length===1?'':'s'} found</div>
+    <div class="grid2">${results.map(itemCardHtml).join('')||'<div class="empty" style="grid-column:1/-1"><span class="em">🔍</span>No items match your search</div>'}</div>
+  </div>`;
+}
+function onSearchInput(v){state.searchQ=v; render(); const inp=document.getElementById('search-input'); inp.focus(); inp.setSelectionRange(v.length,v.length);}
+function setCat(c){state.searchCat=c; render();}
+
+/* ===================== ITEM DETAIL ===================== */
+function screenItemDetail(id){
+  const item=db.items[id]; if(!item) return `<div class="screen">${topbar('Item')}<div class="empty">Item not found</div></div>`;
+  const owner=db.users[item.ownerId];
+  const isFav=db.favorites.includes(id);
+  const isMine=item.ownerId===db.me;
+  const imgs=item.images&&item.images.length?item.images:['placeholder'];
+  const revs=(db.reviews[owner.id]||[]).slice(0,2);
+  return `
+  ${topbar('',{right:`<button class="iconbtn" onclick="toggleFav(event,'${id}')" style="color:${isFav?'#C1392B':'inherit'}">♥</button>`})}
+  <div class="carousel" id="carousel" onscroll="updateDots(this)">
+    ${imgs.map(im=> im!=='placeholder' ? `<div class="slide"><img src="${im}"></div>` : `<div class="slide" style="background:${placeholderGrad(item.category)}">${catEmoji(item.category)}</div>`).join('')}
+  </div>
+  ${imgs.length>1?`<div class="dots">${imgs.map((_,i)=>`<span class="${i===0?'on':''}"></span>`).join('')}</div>`:''}
+  <div class="screen">
+    <div style="display:flex;gap:8px;flex-wrap:wrap;margin-bottom:10px;">
+      <span class="pill">${catEmoji(item.category)} ${catLabel(item.category)}</span>
+      <span class="pill">Size ${esc(item.size)}</span>
+      <span class="pill">${esc(item.condition)}</span>
+    </div>
+    <h1 style="font-size:21px;margin:0 0 6px;">${esc(item.title)}</h1>
+    <div style="display:flex;align-items:baseline;gap:8px;margin-bottom:14px;">
+      <span style="font-size:22px;font-weight:800;">${fmtKr(item.price)}</span><span style="color:var(--text-soft);font-size:13px;">/ day</span>
+    </div>
+    <div class="card" style="padding:14px;margin-bottom:16px;">
+      <div class="kv"><span>Refundable deposit</span><b>${fmtKr(item.deposit)}</b></div>
+      <div class="kv"><span>Available</span><b>${fmtDate(item.availFrom)} – ${fmtDate(item.availTo)}</b></div>
+      <div class="kv"><span>Pickup / return spot</span><b>${esc(item.location)}</b></div>
+    </div>
+    <div class="section-title" style="margin-top:0;"><h2>Description</h2></div>
+    <p style="font-size:14px;line-height:1.55;color:var(--text-soft);margin:0 0 16px;">${esc(item.desc)}</p>
+    ${(item.occasions&&item.occasions.length)?`<div class="tagpick" style="margin-bottom:20px;">${item.occasions.map(o=>`<span class="chip">${esc(o)}</span>`).join('')}</div>`:''}
+    <div class="divider"></div>
+    <div class="card" style="padding:14px;display:flex;align-items:center;gap:12px;cursor:pointer;" onclick="go('profile',{userId:'${owner.id}'})">
+      ${avatarHtml(owner,46)}
+      <div style="flex:1;">
+        <div style="font-weight:700;font-size:14.5px;">${esc(owner.name)} ${owner.verified?'<span class="verified">✓ JU</span>':''}</div>
+        <div style="font-size:12.5px;color:var(--text-soft);">${esc(owner.program)}</div>
+        <div class="stars">${stars(owner.ratingAvg)} <span style="color:var(--text-soft);">(${owner.ratingCount})</span></div>
+      </div>
+      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 18l6-6-6-6"/></svg>
+    </div>
+    ${revs.length?`<div class="section-title"><h2>What renters say</h2></div>${revs.map(r=>`
+      <div class="review"><div class="review-head">${avatarHtml(db.users[r.from]||{id:r.from,name:'?'},26)}<b style="font-size:13px;">${esc((db.users[r.from]||{}).name||'Student')}</b><span class="stars">${stars(r.rating)}</span></div><div style="font-size:13px;color:var(--text-soft);">${esc(r.text)}</div></div>`).join('')}`:''}
+  </div>
+  ${!isMine?`
+  <div class="sticky-cta">
+    <div class="btn-row">
+      <button class="btn btn-beige btn-sm" onclick="openChatWith('${owner.id}','${id}')">💬 Message</button>
+      <button class="btn btn-primary btn-sm" onclick="go('booking',{id:'${id}',step:1})" style="flex:2;">Rent this item</button>
+    </div>
+  </div>`:`
+  <div class="sticky-cta"><button class="btn btn-outline" onclick="go('profile',{userId:'u_me'})">This is your listing</button></div>`}
+  `;
+}
+function updateDots(el){const i=Math.round(el.scrollLeft/el.clientWidth); document.querySelectorAll('.dots span').forEach((d,idx)=>d.classList.toggle('on',idx===i));}
+
+/* ===================== BOOKING FLOW ===================== */
+function screenBooking(itemId,step){
+  const item=db.items[itemId]; const owner=db.users[item.ownerId];
+  if(!state.bookingDraft||state.bookingDraft.itemId!==itemId){
+    state.bookingDraft={itemId,start:item.availFrom,end:addDays(item.availFrom,2),spot:null};
+  }
+  const d=state.bookingDraft;
+  const days=daysBetween(d.start,d.end);
+  const subtotal=days*item.price;
+  const total=subtotal+item.deposit;
+  let body='';
+  if(step===1){
+    body=`
+    <div class="field"><label>Pickup date</label><input type="date" value="${d.start}" min="${item.availFrom}" max="${item.availTo}" onchange="state.bookingDraft.start=this.value;render()"></div>
+    <div class="field"><label>Return date</label><input type="date" value="${d.end}" min="${d.start}" max="${item.availTo}" onchange="state.bookingDraft.end=this.value;render()"></div>
+    <div class="card" style="padding:14px;"><div class="kv"><span>Rental length</span><b>${days} day${days>1?'s':''}</b></div><div class="kv"><span>Subtotal</span><b>${fmtKr(subtotal)}</b></div></div>
+    <div class="sticky-cta" style="position:static;padding:20px 0 0;"><button class="btn btn-primary" onclick="go('booking',{id:'${itemId}',step:2})">Continue</button></div>`;
+  } else if(step===2){
+    body=`
+    <div style="font-size:13.5px;color:var(--text-soft);margin-bottom:14px;">Choose a safe, predefined JU meetup spot instead of sharing your address.</div>
+    ${SPOTS.map(s=>`
+      <div class="radio-row ${d.spot===s.id?'sel':''}" onclick="state.bookingDraft.spot='${s.id}';render()">
+        <div class="rdot"></div><div style="font-size:14px;font-weight:600;">${esc(s.name)}</div>
+      </div>`).join('')}
+    <div class="sticky-cta" style="position:static;padding:20px 0 0;"><button class="btn btn-primary" ${!d.spot?'disabled':''} onclick="go('booking',{id:'${itemId}',step:3})">Continue</button></div>`;
+  } else {
+    const spot=SPOTS.find(s=>s.id===d.spot);
+    const insufficient=db.wallet.balance<total;
+    body=`
+    <div class="card" style="padding:16px;margin-bottom:16px;">
+      <div class="kv"><span>${esc(item.title)}</span><b>${days}d</b></div>
+      <div class="kv"><span>${fmtDate(d.start)} → ${fmtDate(d.end)}</span></div>
+      <div class="kv"><span>Meetup spot</span><b>${esc(spot?spot.name:'—')}</b></div>
+      <div class="divider"></div>
+      <div class="kv"><span>Rental (${days} × ${fmtKr(item.price)})</span><b>${fmtKr(subtotal)}</b></div>
+      <div class="kv"><span>Refundable damage deposit</span><b>${fmtKr(item.deposit)}</b></div>
+      <div class="divider"></div>
+      <div class="kv" style="font-size:16px;"><span><b>Total due now</b></span><b>${fmtKr(total)}</b></div>
+    </div>
+    <div style="font-size:12px;color:var(--text-soft);margin-bottom:16px;">The deposit is held safely and refunded to your wallet once ${esc(owner.name.split(' ')[0])} confirms the item was returned in agreed condition.</div>
+    ${insufficient?`<div class="pill status-declined" style="margin-bottom:14px;">Insufficient wallet balance — <span class="link" onclick="go('wallet')">top up</span></div>`:''}
+    <div class="sticky-cta" style="position:static;padding:0;"><button class="btn btn-primary" ${insufficient?'disabled':''} onclick="confirmBooking('${itemId}')">Confirm & Pay ${fmtKr(total)}</button></div>`;
+  }
+  return `
+  ${topbar('Rent item')}
+  <div class="screen">
+    <div class="steps"><div class="${step>=1?'done':''}"></div><div class="${step>=2?'done':''}"></div><div class="${step>=3?'done':''}"></div></div>
+    <div style="display:flex;gap:10px;align-items:center;margin-bottom:18px;">
+      <div class="item-img" style="width:50px;height:50px;border-radius:12px;background:${placeholderGrad(item.category)};font-size:22px;">${(item.images&&item.images[0]!=='placeholder')?`<img src="${item.images[0]}">`:catEmoji(item.category)}</div>
+      <div><div style="font-weight:700;font-size:14px;">${esc(item.title)}</div><div style="font-size:12px;color:var(--text-soft);">${fmtKr(item.price)}/day · Owner ${esc(owner.name.split(' ')[0])}</div></div>
+    </div>
+    ${body}
+  </div>`;
+}
+function confirmBooking(itemId){
+  const item=db.items[itemId]; const d=state.bookingDraft; const days=daysBetween(d.start,d.end);
+  const price=days*item.price; const spot=SPOTS.find(s=>s.id===d.spot);
+  const bk={id:uid('bk'),itemId,renterId:db.me,ownerId:item.ownerId,status:'requested',start:d.start,end:d.end,meetup:spot.name,price,deposit:item.deposit,createdAt:new Date().toISOString(),returnPhotos:[]};
+  db.bookings[bk.id]=bk;
+  db.wallet.balance-=(price+item.deposit);
+  db.wallet.transactions.push({id:uid('tx'),type:'rental_payment',amount:-price,desc:'Rental payment — '+item.title,time:new Date().toISOString()});
+  db.wallet.transactions.push({id:uid('tx'),type:'deposit_hold',amount:-item.deposit,desc:'Deposit hold — '+item.title,time:new Date().toISOString()});
+  db.notifications.unshift({id:uid('nt'),type:'booking',text:'Request sent to '+db.users[item.ownerId].name+' for '+item.title+'.',time:new Date().toISOString(),read:false,route:{r:'booking-detail',p:{id:bk.id}}});
+  saveDB();
+  setTimeout(()=>{ // simulate owner auto-accept
+    const b=db.bookings[bk.id]; if(b&&b.status==='requested'){ b.status='confirmed';
+      db.notifications.unshift({id:uid('nt'),type:'booking',text:db.users[item.ownerId].name+' confirmed your booking for '+item.title+'.',time:new Date().toISOString(),read:false,route:{r:'booking-detail',p:{id:bk.id}}});
+      saveDB(); if(state.route==='booking-detail'&&state.params.id===bk.id) render();
+    }
+  },2000);
+  state.bookingDraft=null;
+  toast('Booking request sent!');
+  go('booking-detail',{id:bk.id});
+}
+
+/* ===================== BOOKING DETAIL / TRACKING ===================== */
+function screenBookingDetail(id){
+  const b=db.bookings[id]; if(!b) return `<div class="screen">${topbar('Booking')}<div class="empty">Not found</div></div>`;
+  const item=db.items[b.itemId]; const isOwnerView=b.ownerId===db.me;
+  const other=db.users[isOwnerView?b.renterId:b.ownerId];
+  const statusLabel={requested:'Requested',confirmed:'Confirmed',active:'Active',return_pending:'Awaiting confirmation',completed:'Completed',declined:'Declined',cancelled:'Cancelled'}[b.status];
+  let actions='';
+  if(isOwnerView){
+    if(b.status==='requested') actions=`<div class="btn-row"><button class="btn btn-danger btn-sm" onclick="declineBooking('${id}')">Decline</button><button class="btn btn-primary btn-sm" onclick="acceptBooking('${id}')">Accept</button></div>`;
+    else if(b.status==='return_pending') actions=`<button class="btn btn-primary" onclick="confirmReturn('${id}')">Confirm condition & refund deposit</button>`;
+  } else {
+    if(b.status==='requested') actions=`<div style="font-size:13px;color:var(--text-soft);margin-bottom:10px;">Waiting for ${esc(other.name.split(' ')[0])} to confirm…</div><button class="btn btn-danger" onclick="cancelBooking('${id}')">Cancel request</button>`;
+    else if(b.status==='confirmed') actions=`<button class="btn btn-primary" onclick="markPickedUp('${id}')">Mark as picked up</button>`;
+    else if(b.status==='active') actions=`<button class="btn btn-primary" onclick="markReturned('${id}')">Mark as returned</button>`;
+    else if(b.status==='return_pending') actions=`<div style="font-size:13px;color:var(--text-soft);">Waiting for ${esc(other.name.split(' ')[0])} to confirm return and refund your deposit.</div>`;
+  }
+  return `
+  ${topbar('Booking details')}
+  <div class="screen">
+    <div class="card list-row" style="margin-bottom:16px;" onclick="go('item',{id:'${item.id}'})">
+      <div class="item-img" style="width:60px;height:60px;border-radius:14px;background:${placeholderGrad(item.category)};font-size:26px;">${(item.images&&item.images[0]!=='placeholder')?`<img src="${item.images[0]}">`:catEmoji(item.category)}</div>
+      <div class="rowinfo"><div class="item-title">${esc(item.title)}</div><div class="item-meta">${fmtDate(b.start)} – ${fmtDate(b.end)}</div></div>
+    </div>
+    <span class="pill status-${b.status}">${statusLabel}</span>
+    <div class="card" style="padding:14px;margin:14px 0;">
+      <div class="kv"><span>${isOwnerView?'Renter':'Owner'}</span><b>${esc(other.name)}</b></div>
+      <div class="kv"><span>Meetup spot</span><b>${esc(b.meetup)}</b></div>
+      <div class="kv"><span>Rental price</span><b>${fmtKr(b.price)}</b></div>
+      <div class="kv"><span>Damage deposit</span><b>${fmtKr(b.deposit)}</b></div>
+    </div>
+    <button class="btn btn-beige" style="margin-bottom:16px;" onclick="openChatWith('${other.id}','${item.id}')">💬 Message ${esc(other.name.split(' ')[0])}</button>
+    ${actions}
+  </div>`;
+}
+function findBookingThreadCtx(id){return id;}
+function acceptBooking(id){const b=db.bookings[id]; b.status='confirmed'; db.notifications.unshift({id:uid('nt'),type:'booking',text:'You confirmed the booking for '+db.items[b.itemId].title+'.',time:new Date().toISOString(),read:true}); saveDB(); toast('Booking accepted'); render();}
+function declineBooking(id){const b=db.bookings[id]; const item=db.items[b.itemId]; b.status='declined';
+  db.wallet.transactions.push({id:uid('tx'),type:'refund',amount:b.price+b.deposit,desc:'Refund — '+item.title+' (declined)',time:new Date().toISOString()});
+  db.wallet.balance+=b.price+b.deposit; saveDB(); toast('Booking declined & renter refunded'); render();}
+function cancelBooking(id){const b=db.bookings[id]; const item=db.items[b.itemId]; b.status='cancelled';
+  db.wallet.transactions.push({id:uid('tx'),type:'refund',amount:b.price+b.deposit,desc:'Refund — '+item.title+' (cancelled)',time:new Date().toISOString()});
+  db.wallet.balance+=b.price+b.deposit; saveDB(); toast('Request cancelled & refunded'); render();}
+function markPickedUp(id){const b=db.bookings[id]; b.status='active'; saveDB(); toast('Enjoy your rental!'); render();}
+function markReturned(id){const b=db.bookings[id]; b.status='return_pending'; saveDB(); toast('Marked as returned'); render();
+  setTimeout(()=>{const bb=db.bookings[id]; if(bb&&bb.status==='return_pending'&&bb.ownerId!==db.me){
+    const item=db.items[bb.itemId];
+    bb.status='completed';
+    db.wallet.transactions.push({id:uid('tx'),type:'deposit_refund',amount:bb.deposit,desc:'Deposit refunded — '+item.title,time:new Date().toISOString()});
+    db.wallet.balance+=bb.deposit;
+    db.notifications.unshift({id:uid('nt'),type:'payment',text:db.users[bb.ownerId].name+' confirmed your return. Deposit refunded!',time:new Date().toISOString(),read:false});
+    saveDB(); if(state.route==='booking-detail'&&state.params.id===id) render();
+  }},2500);
+}
+function confirmReturn(id){const b=db.bookings[id]; const item=db.items[b.itemId]; b.status='completed';
+  db.wallet.transactions.push({id:uid('tx'),type:'deposit_refund_out',amount:0,desc:'Confirmed return — '+item.title,time:new Date().toISOString()});
+  db.wallet.transactions.push({id:uid('tx'),type:'earning',amount:b.price,desc:'Earnings — '+item.title,time:new Date().toISOString()});
+  db.wallet.balance+=b.price;
+  db.notifications.unshift({id:uid('nt'),type:'payment',text:'You earned '+fmtKr(b.price)+' from '+item.title+'.',time:new Date().toISOString(),read:true});
+  saveDB(); toast('Return confirmed — earnings added to wallet'); render();
+}
+
+/* ===================== LIST AN ITEM ===================== */
+function screenListCreate(){
+  if(!state.listDraft) state.listDraft={images:[null,null,null,null],title:'',category:'dresses',size:'M',condition:'Good',desc:'',price:'',deposit:'',availFrom:today(),availTo:addDays(today(),30),occasions:[],location:SPOTS[0].name};
+  const d=state.listDraft;
+  return `
+  ${topbar('List an item')}
+  <div class="screen">
+    <div class="field">
+      <label>Photos</label>
+      <div class="photo-grid">
+        ${d.images.map((im,i)=>`
+          <div class="photo-slot" onclick="pickPhoto(${i})">
+            ${im?`<img src="${im}"><button class="rm" onclick="removePhoto(event,${i})">✕</button>`:`<svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M4 7h3l2-2h6l2 2h3v13H4z"/><circle cx="12" cy="13" r="3.5"/></svg>`}
+          </div>`).join('')}
+      </div>
+      <div style="font-size:11.5px;color:var(--text-faint);">Tap a slot to take a photo or choose from your library.</div>
+    </div>
+    <div class="field"><label>Title</label><input type="text" id="f-title" value="${esc(d.title)}" placeholder="e.g. Black Halloween Witch Costume" oninput="state.listDraft.title=this.value"></div>
+    <div class="row2">
+      <div class="field"><label>Category</label><select id="f-cat" onchange="state.listDraft.category=this.value">${CATS.map(c=>`<option value="${c.id}" ${d.category===c.id?'selected':''}>${c.em} ${c.label}</option>`).join('')}</select></div>
+      <div class="field"><label>Size</label><select id="f-size" onchange="state.listDraft.size=this.value">${SIZES.map(s=>`<option ${d.size===s?'selected':''}>${s}</option>`).join('')}</select></div>
+    </div>
+    <div class="field"><label>Condition</label><select id="f-cond" onchange="state.listDraft.condition=this.value">${CONDITIONS.map(c=>`<option ${d.condition===c?'selected':''}>${c}</option>`).join('')}</select></div>
+    <div class="field"><label>Description</label><textarea id="f-desc" placeholder="Fit, fabric, styling tips, wash instructions…" oninput="state.listDraft.desc=this.value">${esc(d.desc)}</textarea></div>
+    <div class="row2">
+      <div class="field"><label>Price / day (kr)</label><input type="number" id="f-price" value="${d.price}" placeholder="79" oninput="state.listDraft.price=this.value"></div>
+      <div class="field"><label>Damage deposit (kr)</label><input type="number" id="f-deposit" value="${d.deposit}" placeholder="400" oninput="state.listDraft.deposit=this.value"></div>
+    </div>
+    <div class="row2">
+      <div class="field"><label>Available from</label><input type="date" id="f-from" value="${d.availFrom}" oninput="state.listDraft.availFrom=this.value"></div>
+      <div class="field"><label>Available to</label><input type="date" id="f-to" value="${d.availTo}" oninput="state.listDraft.availTo=this.value"></div>
+    </div>
+    <div class="field">
+      <label>Best for</label>
+      <div class="tagpick">${OCCASIONS.map(o=>`<div class="chip ${d.occasions.includes(o)?'active':''}" onclick="toggleOcc('${o}')">${o}</div>`).join('')}</div>
+    </div>
+    <div class="field">
+      <label>Default meetup spot</label>
+      <select id="f-loc" onchange="state.listDraft.location=this.value">${SPOTS.map(s=>`<option ${d.location===s.name?'selected':''}>${s.name}</option>`).join('')}</select>
+    </div>
+    <button class="btn btn-primary" onclick="publishListing()">Publish listing</button>
+  </div>`;
+}
+function pickPhoto(i){state.listSlot=i; state.camTarget='listing'; document.getElementById('hiddenCam').click();}
+function removePhoto(ev,i){ev.stopPropagation(); state.listDraft.images[i]=null; render();}
+function toggleOcc(o){const d=state.listDraft; const i=d.occasions.indexOf(o); if(i>-1)d.occasions.splice(i,1); else d.occasions.push(o); render();}
+function publishListing(){
+  const d=state.listDraft;
+  if(!d.title||!d.price||!d.deposit){toast('Please fill in title, price and deposit'); return;}
+  const images=d.images.filter(Boolean); if(!images.length) images.push('placeholder');
+  const id=uid('it');
+  db.items[id]={id,ownerId:db.me,title:d.title,category:d.category,size:d.size,condition:d.condition,desc:d.desc||'No description provided.',price:Number(d.price),deposit:Number(d.deposit),images,occasions:d.occasions,availFrom:d.availFrom,availTo:d.availTo,location:d.location,createdAt:new Date().toISOString(),trending:false,distanceLabel:'Your listing',favoritesCount:0};
+  saveDB();
+  state.listDraft=null;
+  toast('Listing published!');
+  go('item',{id});
+}
+
+/* ===================== CAMERA (shared hidden input) ===================== */
+document.getElementById('hiddenCam').addEventListener('change',function(e){
+  const file=e.target.files[0]; if(!file) return;
+  fileToDataURL(file).then(url=>{
+    if(state.camTarget==='listing'){ state.listDraft.images[state.listSlot]=url; render(); }
+    else if(state.camTarget==='returnphoto'){ const b=db.bookings[state.camBookingId]; b.returnPhotos=b.returnPhotos||[]; b.returnPhotos.push(url); saveDB(); render(); }
+    else if(state.camTarget==='avatar'){ state.profileDraft.avatarPhoto=url; render(); }
+  });
+  e.target.value='';
+});
+function fileToDataURL(file,maxDim,quality){
+  maxDim=maxDim||1000; quality=quality||0.72;
+  return new Promise(resolve=>{
+    const reader=new FileReader();
+    reader.onload=function(e){
+      const img=new Image();
+      img.onload=function(){
+        let w=img.width,h=img.height;
+        if(w>h){ if(w>maxDim){h=h*maxDim/w; w=maxDim;} } else { if(h>maxDim){w=w*maxDim/h; h=maxDim;} }
+        const c=document.createElement('canvas'); c.width=w; c.height=h;
+        c.getContext('2d').drawImage(img,0,0,w,h);
+        resolve(c.toDataURL('image/jpeg',quality));
+      };
+      img.src=e.target.result;
+    };
+    reader.readAsDataURL(file);
+  });
+}
+
+/* ===================== INBOX / CHAT ===================== */
+function threadIdFor(userA,userB,itemId){const key=[userA,userB].sort().join('_')+'_'+itemId; return key;}
+function openChatWith(otherId,itemId){
+  const tid=threadIdFor(db.me,otherId,itemId);
+  if(!db.messages[tid]) db.messages[tid]={id:tid,participants:[db.me,otherId],itemId,messages:[]};
+  saveDB();
+  go('chat',{threadId:tid});
+}
+function screenInbox(){
+  const threads=Object.values(db.messages).sort((a,b)=>{
+    const la=a.messages[a.messages.length-1], lb=b.messages[b.messages.length-1];
+    return new Date((lb&&lb.time)||0)-new Date((la&&la.time)||0);
+  });
+  return `
+  <div class="screen" style="padding-top:16px;">
+    <div class="logo" style="font-size:20px;margin-bottom:16px;">Messages</div>
+    ${threads.length?threads.map(t=>{
+      const otherId=t.participants.find(p=>p!==db.me); const other=db.users[otherId];
+      const last=t.messages[t.messages.length-1];
+      const item=db.items[t.itemId];
+      return `<div class="list-row" style="border-bottom:1px solid var(--line);" onclick="go('chat',{threadId:'${t.id}'})">
+        ${avatarHtml(other,46)}
+        <div class="rowinfo">
+          <div style="display:flex;justify-content:space-between;"><b style="font-size:14px;">${esc(other.name)}</b><span style="font-size:11px;color:var(--text-faint);">${last?timeAgo(last.time):''}</span></div>
+          <div style="font-size:12.5px;color:var(--text-soft);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">${item?'Re: '+esc(item.title)+' · ':''}${last?esc(last.text):'Say hi 👋'}</div>
+        </div>
+      </div>`;
+    }).join(''):`<div class="empty"><span class="em">💬</span>No messages yet.<br>Message an owner from any item page.</div>`}
+  </div>`;
+}
+const CANNED=[
+  {kw:['size','fit'],reply:"Sure! It runs true to size, but message me your measurements if you want to double check 🙂"},
+  {kw:['pickup','meet','where'],reply:"Works for me! Let's confirm the exact time once the booking is set."},
+  {kw:['condition','damage','clean'],reply:"It's in the condition described in the listing — freshly cleaned before every rental."},
+  {kw:['price','deposit','cost'],reply:"Price and deposit are listed on the item page — the deposit is fully refunded after return!"},
+  {kw:['hi','hej','hello'],reply:"Hej! Thanks for reaching out 😊 let me know what you'd like to know."},
+];
+function screenChat(threadId){
+  const t=db.messages[threadId]; if(!t) return `<div class="screen">${topbar('Chat')}<div class="empty">Conversation not found</div></div>`;
+  const otherId=t.participants.find(p=>p!==db.me); const other=db.users[otherId]; const item=db.items[t.itemId];
+  return `
+  ${topbar(other.name,{right:`<div style="width:36px"></div>`})}
+  ${item?`<div class="card list-row" style="margin:12px 18px 0;" onclick="go('item',{id:'${item.id}'})"><div class="item-img" style="width:40px;height:40px;border-radius:10px;background:${placeholderGrad(item.category)};font-size:18px;">${catEmoji(item.category)}</div><div class="rowinfo" style="font-size:12.5px;"><b>${esc(item.title)}</b><div style="color:var(--text-soft);">${fmtKr(item.price)}/day</div></div></div>`:''}
+  <div class="screen" style="padding-top:14px;padding-bottom:6px;" id="chat-scroll">
+    ${t.messages.length?t.messages.map(m=>`<div><div class="msg-bubble ${m.from===db.me?'msg-me':'msg-them'}">${esc(m.text)}</div><div class="msg-time">${timeAgo(m.time)}</div></div>`).join(''):`<div class="empty"><span class="em">👋</span>Say hi to ${esc(other.name.split(' ')[0])}</div>`}
+  </div>
+  <div class="chatbar">
+    <input id="chat-input" placeholder="Message about sizing, pickup…" onkeydown="if(event.key==='Enter')sendMsg('${threadId}')">
+    <button onclick="sendMsg('${threadId}')"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M22 2L11 13"/><path d="M22 2l-7 20-4-9-9-4z"/></svg></button>
+  </div>`;
+}
+function sendMsg(threadId){
+  const inp=document.getElementById('chat-input'); const text=inp.value.trim(); if(!text) return;
+  const t=db.messages[threadId]; t.messages.push({from:db.me,text,time:new Date().toISOString()});
+  saveDB(); inp.value=''; render(); scrollChatBottom();
+  const otherId=t.participants.find(p=>p!==db.me);
+  setTimeout(()=>{
+    const low=text.toLowerCase(); let reply=CANNED.find(c=>c.kw.some(k=>low.includes(k)));
+    const txt=reply?reply.reply:"Got it, thanks for the message! 🙌";
+    t.messages.push({from:otherId,text:txt,time:new Date().toISOString()});
+    db.notifications.unshift({id:uid('nt'),type:'message',text:db.users[otherId].name+': '+txt,time:new Date().toISOString(),read:false,route:{r:'chat',p:{threadId}}});
+    saveDB();
+    if(state.route==='chat'&&state.params.threadId===threadId){render(); scrollChatBottom();}
+  },1300);
+}
+function scrollChatBottom(){const el=document.getElementById('chat-scroll'); if(el&&el.scrollIntoView) el.scrollIntoView({block:'end'}); const app=document.getElementById('app'); if(app) app.scrollTop=app.scrollHeight;}
+
+/* ===================== WALLET ===================== */
+function screenWallet(){
+  const txs=db.wallet.transactions.slice().sort((a,b)=>new Date(b.time)-new Date(a.time));
+  const icon={bonus:'🎁',rental_payment:'👗',deposit_hold:'🔒',deposit_refund:'↩️',refund:'↩️',earning:'💰',topup:'⬆️',deposit_refund_out:'✅'};
+  return `
+  ${topbar('Wallet')}
+  <div class="screen">
+    <div class="card" style="padding:22px;text-align:center;background:var(--beige);border:none;margin-bottom:18px;">
+      <div style="font-size:12.5px;color:var(--text-soft);margin-bottom:6px;">Available balance</div>
+      <div style="font-size:34px;font-weight:800;">${fmtKr(db.wallet.balance)}</div>
+      <div class="btn-row" style="margin-top:16px;">
+        <button class="btn btn-primary btn-sm" onclick="topUp()">Top up</button>
+        <button class="btn btn-outline btn-sm" onclick="withdraw()">Withdraw</button>
+      </div>
+    </div>
+    <div class="section-title" style="margin-top:0;"><h2>Transaction history</h2></div>
+    ${txs.length?txs.map(t=>`
+      <div class="list-row" style="border-bottom:1px solid var(--line);padding-left:0;padding-right:0;">
+        <div class="notif-row" style="padding:0;border:none;"><div class="em">${icon[t.type]||'💳'}</div></div>
+        <div class="rowinfo"><div style="font-size:13.5px;font-weight:600;">${esc(t.desc)}</div><div style="font-size:11.5px;color:var(--text-faint);">${timeAgo(t.time)}</div></div>
+        <div style="font-weight:700;color:${t.amount<0?'var(--danger)':'var(--success)'};font-size:14px;">${t.amount<0?'−':'+'}${fmtKr(Math.abs(t.amount))}</div>
+      </div>`).join(''):'<div class="empty">No transactions yet</div>'}
+  </div>`;
+}
+function topUp(){db.wallet.balance+=500; db.wallet.transactions.push({id:uid('tx'),type:'topup',amount:500,desc:'Wallet top-up',time:new Date().toISOString()}); saveDB(); toast('Added 500 kr'); render();}
+function withdraw(){const amt=Math.min(200,db.wallet.balance); if(amt<=0){toast('Nothing to withdraw'); return;} db.wallet.balance-=amt; db.wallet.transactions.push({id:uid('tx'),type:'withdraw',amount:-amt,desc:'Withdrawal to bank',time:new Date().toISOString()}); saveDB(); toast('Withdrew '+fmtKr(amt)); render();}
+
+/* ===================== NOTIFICATIONS ===================== */
+function screenNotifications(){
+  const icon={system:'✨',booking:'📦',payment:'💰',message:'💬'};
+  return `
+  ${topbar('Notifications')}
+  <div class="screen">
+    ${db.notifications.length?db.notifications.map(n=>`
+      <div class="notif-row ${!n.read?'unread':''}" onclick="openNotif('${n.id}')">
+        <div class="em">${icon[n.type]||'🔔'}</div>
+        <div class="rowinfo"><div style="font-size:13.5px;">${esc(n.text)}</div><div style="font-size:11.5px;color:var(--text-faint);margin-top:2px;">${timeAgo(n.time)}</div></div>
+      </div>`).join(''):'<div class="empty"><span class="em">🔔</span>No notifications yet</div>'}
+  </div>`;
+}
+function openNotif(id){const n=db.notifications.find(x=>x.id===id); if(!n) return; n.read=true; saveDB(); if(n.route) go(n.route.r,n.route.p); else render();}
+
+/* ===================== FAVORITES ===================== */
+function screenFavorites(){
+  const items=db.favorites.map(id=>db.items[id]).filter(Boolean);
+  return `
+  ${topbar('Favorites')}
+  <div class="screen">
+    <div class="grid2">${items.map(itemCardHtml).join('')||'<div class="empty" style="grid-column:1/-1"><span class="em">♥</span>No favorites yet — tap the heart on any item.</div>'}</div>
+  </div>`;
+}
+
+/* ===================== PROFILE ===================== */
+function screenProfile(userId){
+  state.profileDraft=null;
+  const u=db.users[userId]; const isMe=userId===db.me;
+  const myItems=Object.values(db.items).filter(i=>i.ownerId===userId);
+  const renting=Object.values(db.bookings).filter(b=>b.renterId===db.me);
+  const lending=Object.values(db.bookings).filter(b=>b.ownerId===db.me);
+  const revs=(db.reviews[userId]||[]).slice().reverse();
+  const tab=state.params.tab||'listings';
+  let content='';
+  if(!isMe){
+    content=`<div class="grid2">${myItems.map(itemCardHtml).join('')||'<div class="empty" style="grid-column:1/-1">No active listings</div>'}</div>`;
+  } else {
+    content=`
+    <div class="profile-tabs">
+      <button class="${tab==='listings'?'active':''}" onclick="go('profile',{userId:'${userId}',tab:'listings'})">Listings</button>
+      <button class="${tab==='renting'?'active':''}" onclick="go('profile',{userId:'${userId}',tab:'renting'})">Renting</button>
+      <button class="${tab==='lending'?'active':''}" onclick="go('profile',{userId:'${userId}',tab:'lending'})">Lending</button>
+      <button class="${tab==='reviews'?'active':''}" onclick="go('profile',{userId:'${userId}',tab:'reviews'})">Reviews</button>
+    </div>
+    ${tab==='listings'?`<div class="grid2">${myItems.map(itemCardHtml).join('')||'<div class="empty" style="grid-column:1/-1">You haven&#39;t listed anything yet.<br><span class="link" onclick="go(&#39;list-create&#39;)">List your first item →</span></div>'}</div>`:''}
+    ${tab==='renting'?bookingList(renting,false):''}
+    ${tab==='lending'?bookingList(lending,true):''}
+    ${tab==='reviews'?(revs.length?revs.map(r=>`<div class="review"><div class="review-head">${avatarHtml(db.users[r.from]||{id:r.from,name:'?'},28)}<b style="font-size:13px;">${esc((db.users[r.from]||{}).name||'Student')}</b><span class="stars">${stars(r.rating)}</span></div><div style="font-size:13px;color:var(--text-soft);">${esc(r.text)}</div></div>`).join(''):'<div class="empty">No reviews yet</div>'):''}
+    `;
+  }
+  return `
+  ${topbar(isMe?'My Profile':u.name,{right:isMe?`<button class="iconbtn" onclick="go('edit-profile')"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 20h9"/><path d="M16.5 3.5a2.12 2.12 0 0 1 3 3L7 19l-4 1 1-4z"/></svg></button>`:'<div style="width:36px"></div>'})}
+  <div class="screen">
+    <div class="center-col" style="margin-bottom:18px;">
+      ${avatarHtml(u,74)}
+      <div style="font-size:18px;font-weight:800;margin-top:10px;">${esc(u.name)} ${u.verified?'<span class="verified">✓ JU verified</span>':''}</div>
+      <div style="font-size:13px;color:var(--text-soft);">${esc(u.program)}</div>
+      <div class="stars" style="margin-top:6px;">${stars(u.ratingAvg)} <span style="color:var(--text-soft);">${u.ratingAvg.toFixed(1)} (${u.ratingCount})</span></div>
+      <p style="font-size:13px;color:var(--text-soft);max-width:280px;margin-top:10px;">${esc(u.bio)}</p>
+    </div>
+    <div style="display:flex;gap:10px;margin-bottom:6px;">
+      <div class="stat-box"><b>${myItems.length}</b><span>Listed</span></div>
+      <div class="stat-box"><b>${Object.values(db.bookings).filter(b=>(b.ownerId===userId||b.renterId===userId)&&b.status==='completed').length}</b><span>Completed</span></div>
+      <div class="stat-box"><b>${new Date(u.joined).getFullYear()}</b><span>Member since</span></div>
+    </div>
+    ${isMe?`<div class="card list-row" style="margin-top:16px;" onclick="go('wallet')"><div class="item-img" style="width:44px;height:44px;border-radius:12px;background:var(--beige);font-size:20px;">💳</div><div class="rowinfo"><b>${fmtKr(db.wallet.balance)}</b><div style="font-size:12px;color:var(--text-soft);">Wallet balance — tap to view</div></div></div>`:`<button class="btn btn-primary" style="margin-top:16px;" onclick="openChatWith('${u.id}','')">💬 Message ${esc(u.name.split(' ')[0])}</button>`}
+    ${content}
+    ${isMe?`<div class="divider"></div><button class="btn btn-outline" onclick="resetDemo()">Reset demo data</button>`:''}
+  </div>`;
+}
+function bookingList(list,isOwnerView){
+  if(!list.length) return '<div class="empty">Nothing here yet</div>';
+  const statusLabel={requested:'Requested',confirmed:'Confirmed',active:'Active',return_pending:'Awaiting confirmation',completed:'Completed',declined:'Declined',cancelled:'Cancelled'};
+  return list.slice().sort((a,b)=>new Date(b.createdAt)-new Date(a.createdAt)).map(b=>{
+    const item=db.items[b.itemId]; if(!item) return '';
+    const other=db.users[isOwnerView?b.renterId:b.ownerId];
+    return `<div class="card list-row" style="margin-bottom:10px;" onclick="go('booking-detail',{id:'${b.id}'})">
+      <div class="item-img" style="width:50px;height:50px;border-radius:12px;background:${placeholderGrad(item.category)};font-size:22px;">${(item.images&&item.images[0]!=='placeholder')?`<img src="${item.images[0]}">`:catEmoji(item.category)}</div>
+      <div class="rowinfo"><div class="item-title">${esc(item.title)}</div><div class="item-meta">${isOwnerView?'Renter':'Owner'}: ${esc(other.name.split(' ')[0])} · ${fmtDate(b.start)}</div><span class="pill status-${b.status}" style="margin-top:4px;">${statusLabel[b.status]}</span></div>
+    </div>`;
+  }).join('');
+}
+function resetDemo(){ if(confirm('This clears all local demo data on this device. Continue?')){ localStorage.removeItem(DB_KEY); location.reload(); } }
+
+/* ===================== EDIT PROFILE ===================== */
+function screenEditProfile(){
+  const u=me();
+  if(!state.profileDraft) state.profileDraft={name:u.name,program:u.program,email:u.email||'',bio:u.bio,avatarPhoto:u.avatarPhoto||null};
+  const d=state.profileDraft;
+  return `
+  ${topbar('Edit profile')}
+  <div class="screen">
+    <div class="center-col" style="margin-bottom:18px;">
+      <div style="position:relative;">${avatarHtml({id:u.id,name:d.name,color:u.color,avatarPhoto:d.avatarPhoto},84)}<button class="iconbtn" style="position:absolute;bottom:-2px;right:-2px;background:var(--text);color:var(--bg);" onclick="state.camTarget='avatar';document.getElementById('hiddenCam').click();">📷</button></div>
+    </div>
+    <div class="field"><label>Full name</label><input type="text" id="e-name" value="${esc(d.name)}" oninput="state.profileDraft.name=this.value"></div>
+    <div class="field"><label>Program</label><input type="text" id="e-program" value="${esc(d.program)}" oninput="state.profileDraft.program=this.value"></div>
+    <div class="field"><label>University email</label><input type="email" id="e-email" value="${esc(d.email)}" placeholder="you@ju.se" oninput="state.profileDraft.email=this.value"></div>
+    <div class="field"><label>Bio</label><textarea id="e-bio" oninput="state.profileDraft.bio=this.value">${esc(d.bio)}</textarea></div>
+    <button class="btn btn-primary" onclick="saveProfile()">Save changes</button>
+  </div>`;
+}
+function saveProfile(){
+  const u=me(); const d=state.profileDraft;
+  u.name=d.name.trim()||u.name;
+  u.program=d.program.trim()||u.program;
+  u.email=d.email.trim();
+  u.verified=!!(u.email&&u.email.includes('ju.se'));
+  u.bio=d.bio.trim();
+  u.avatarPhoto=d.avatarPhoto;
+  state.profileDraft=null;
+  saveDB(); toast('Profile updated'); go('profile',{userId:db.me});
+}
+
+/* ===================== BOOT ===================== */
+document.getElementById('appleTouchIcon').href=LOGO_URI;
+if(loadDB()){ go('home'); } else { render(); }
+if(!storageOK){ setTimeout(()=>toast('Note: this browser is blocking saved data — your changes won\'t persist after closing.'),1200); }
+</script>
+</body>
+</html>
