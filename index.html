@@ -468,7 +468,6 @@ function getAnonId(){
   return id;
 }
 function seedDB(name,program,email){
-  const now=new Date();
   const myId=getAnonId();
   const users={};
   const seedPeople=[
@@ -485,20 +484,6 @@ function seedDB(name,program,email){
   users[myId]={id:myId,name:name||'You',program:program||'Jönköping University',email:email||'',ratingAvg:5.0,ratingCount:0,bio:'New to Renté — excited to start renting & lending!',verified:!!(email&&email.includes('ju.se')),joined:today(),color:avatarColorFor(myId)};
 
   const items={};
-  function mkItem(o){const id=uid('it'); items[id]={id,ownerId:o.owner,title:o.title,category:o.cat,size:o.size,condition:o.cond,desc:o.desc,price:o.price,deposit:o.deposit,images:o.images||['placeholder'],occasions:o.occ,availFrom:today(),availTo:addDays(today(),60),location:o.loc||SPOTS[0].name,createdAt:addDays(today(),-Math.floor(Math.random()*20)),trending:!!o.trend,distanceLabel:o.dist||'Near campus',favoritesCount:Math.floor(Math.random()*30)}; return id;}
-
-  const idHalloween=mkItem({owner:'u_emma',title:'Black Halloween Witch Costume',cat:'halloween',size:'M',cond:'Good',desc:'Full witch look incl. dress, hat and cape. Worn once last Halloween, freshly washed. Great for JU Halloween parties!',price:89,deposit:400,occ:['Halloween','Party','Themed Event'],trend:true,dist:'5 min from Kåren'});
-  mkItem({owner:'u_alice',title:'Red Cocktail Dress – Zara',cat:'dresses',size:'S',cond:'Like new',desc:'Worn twice for dinners. Figure-hugging cut, midi length. Dry cleaned after every rental.',price:99,deposit:500,occ:['Dinner','Party'],trend:true,dist:'On campus'});
-  mkItem({owner:'u_oskar',title:'Navy Blazer Suit – Slim Fit',cat:'suits',size:'M',cond:'Good',desc:'Full 2-piece navy suit, slim fit. Great for formal dinners, interviews or graduation.',price:79,deposit:600,occ:['Formal','Dinner'],dist:'Near Ruth Building'});
-  mkItem({owner:'u_wilma',title:'Beige Trench Coat',cat:'outerwear',size:'M',cond:'Like new',desc:'Classic beige trench, barely worn. Perfect for autumn in Jönköping.',price:69,deposit:450,occ:['Everyday'],dist:'Near Vaxholmen'});
-  mkItem({owner:'u_emma',title:'Silver Heels – Size 38',cat:'shoes',size:'38',cond:'Good',desc:'Comfortable block heel, silver strap sandals. Great for parties.',price:49,deposit:300,occ:['Party','Dinner'],dist:'5 min from Kåren'});
-  mkItem({owner:'u_alice',title:'Pearl Necklace & Earring Set',cat:'accessories',size:'One size',cond:'New with tags',desc:'Never worn, still tagged. Elevates any outfit for dinners or formal events.',price:39,deposit:250,occ:['Formal','Dinner'],dist:'On campus'});
-  mkItem({owner:'u_noah',title:'Black Tie Tuxedo',cat:'formal',size:'L',cond:'Good',desc:'Full tuxedo incl. bowtie and cummerbund. Ideal for balls and formal dinners.',price:129,deposit:800,occ:['Formal'],trend:true,dist:'Near Hälsohögskolan'});
-  mkItem({owner:'u_wilma',title:'Golden Sequin Dress',cat:'dresses',size:'M',cond:'Like new',desc:'Show-stopping sequin dress, worn once. New Year\'s Eve energy.',price:109,deposit:550,occ:['Party','Themed Event'],trend:true,dist:'Near Vaxholmen'});
-  mkItem({owner:'u_leo',title:'Vampire Cape & Costume Set',cat:'halloween',size:'L',cond:'Good',desc:'Dramatic vampire cape, shirt and accessories. A Halloween party favorite.',price:75,deposit:350,occ:['Halloween','Themed Event'],trend:true,dist:'Near Bus Stop'});
-  mkItem({owner:'u_noah',title:'Denim Jacket – Vintage',cat:'outerwear',size:'M',cond:'Fair',desc:'Vintage wash denim jacket with some character. Great casual layer.',price:55,deposit:300,occ:['Everyday'],dist:'Near Hälsohögskolan'});
-  const idSundress=mkItem({owner:myId,title:'Blue Floral Sundress',cat:'dresses',size:'S',cond:'Like new',desc:'Light floral sundress, perfect for spring dinners or garden parties.',price:59,deposit:350,occ:['Dinner','Everyday'],dist:'Your listing'});
-  const idBoots=mkItem({owner:myId,title:'Black Ankle Boots – Size 39',cat:'shoes',size:'39',cond:'Good',desc:'Versatile black ankle boots, goes with everything.',price:45,deposit:280,occ:['Everyday','Party'],dist:'Your listing'});
 
   const reviews={};
   function addReview(userId,from,rating,text,daysAgo){(reviews[userId]=reviews[userId]||[]).push({id:uid('rv'),from,rating,text,time:addDays(today(),-daysAgo)});}
@@ -509,33 +494,14 @@ function seedDB(name,program,email){
   addReview('u_noah','u_emma',5,'Tuxedo made my formal dinner — great condition.',9);
   addReview('u_wilma','u_noah',5,'Fast replies and flexible pickup location.',25);
   addReview('u_leo','u_alice',5,'Cape was a hit at the Halloween party, thank you!',5);
-  addReview(myId,'u_oskar',5,'Boots were in great shape, smooth handover at the library.',3);
 
   const bookings={};
   const wallet={balance:1000,transactions:[]};
   function tx(type,amount,desc,daysAgo){wallet.transactions.push({id:uid('tx'),type,amount,desc,time:addDays(today(),-(daysAgo||0))}); wallet.balance+=amount;}
   tx('bonus',1000,'Welcome bonus',6);
 
-  // booking 1: requested rental of my sundress by Emma
-  const b1=uid('bk');
-  bookings[b1]={id:b1,itemId:idSundress,renterId:'u_emma',ownerId:myId,status:'requested',start:addDays(today(),3),end:addDays(today(),5),meetup:SPOTS[1].name,price:59,deposit:350,createdAt:addDays(today(),0),returnPhotos:[]};
-
-  // booking 2: return_pending, my boots rented by Oskar, awaiting my confirmation
-  const b2=uid('bk');
-  bookings[b2]={id:b2,itemId:idBoots,renterId:'u_oskar',ownerId:myId,status:'return_pending',start:addDays(today(),-6),end:addDays(today(),-3),meetup:SPOTS[0].name,price:45*3,deposit:280,createdAt:addDays(today(),-7),returnPhotos:['placeholder']};
-
-  // booking 3: I'm renting Emma's witch costume, confirmed & upcoming
-  const b3=uid('bk');
-  const days3=2;
-  bookings[b3]={id:b3,itemId:idHalloween,renterId:myId,ownerId:'u_emma',status:'confirmed',start:addDays(today(),37),end:addDays(today(),39),meetup:SPOTS[1].name,price:89*days3,deposit:400,createdAt:addDays(today(),-1),returnPhotos:[]};
-  tx('rental_payment',-(89*days3),'Rental payment — Witch Costume',1);
-  tx('deposit_hold',-400,'Deposit hold — Witch Costume',1);
-
   const notifications=[
-    {id:uid('nt'),type:'system',text:'Welcome to Renté! Complete your profile and list an item to start earning.',time:addDays(today(),-6),read:true},
-    {id:uid('nt'),type:'booking',text:'Emma Lindqvist wants to rent your Blue Floral Sundress.',time:addDays(today(),0),read:false,route:{r:'booking-detail',p:{id:b1}}},
-    {id:uid('nt'),type:'booking',text:'Oskar Berg returned Black Ankle Boots — confirm condition to release your earnings.',time:addDays(today(),-3),read:false,route:{r:'booking-detail',p:{id:b2}}},
-    {id:uid('nt'),type:'payment',text:'Your booking for Black Halloween Witch Costume is confirmed.',time:addDays(today(),-1),read:true,route:{r:'booking-detail',p:{id:b3}}},
+    {id:uid('nt'),type:'system',text:'Welcome to Renté! Complete your profile and list an item to start renting & lending.',time:addDays(today(),-6),read:true},
   ];
 
   db={me:myId,users,items,bookings,messages:{},wallet,favorites:[],notifications,reviews,onboarded:true,points:120};
